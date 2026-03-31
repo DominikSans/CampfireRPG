@@ -33,6 +33,8 @@ class DiagnosticsService(
     fun toggleDebug(): Boolean {
         debugEnabled = !debugEnabled
         ticksSinceLog = 0L
+        plugin.runtimeConfigService.set("debug.enabled-by-default", debugEnabled)
+        plugin.runtimeConfigService.save()
         return debugEnabled
     }
 

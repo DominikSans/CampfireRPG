@@ -22,14 +22,14 @@ class AdminMenuListener(
             return
         }
 
-        when (event.rawSlot) {
-            plugin.guiConfigService.slot("navigation.overview", 2) -> openPage(player, 0, holder.selectedProfileId)
-            plugin.guiConfigService.slot("navigation.toggles", 3) -> openPage(player, 1, holder.selectedProfileId)
-            plugin.guiConfigService.slot("navigation.numeric", 4) -> openPage(player, 2, holder.selectedProfileId)
-            plugin.guiConfigService.slot("navigation.clan", 5) -> openPage(player, 3, holder.selectedProfileId)
-            plugin.guiConfigService.slot("navigation.profile", 6) -> openPage(player, 4, holder.selectedProfileId)
-            plugin.guiConfigService.slot("navigation.previous", 41) -> openPage(player, holder.page - 1, holder.selectedProfileId)
-            plugin.guiConfigService.slot("navigation.next", 43) -> openPage(player, holder.page + 1, holder.selectedProfileId)
+        when {
+            inSlots("nav-overview", event.rawSlot, listOf(2)) -> openPage(player, 0, holder.selectedProfileId)
+            inSlots("nav-toggles", event.rawSlot, listOf(3)) -> openPage(player, 1, holder.selectedProfileId)
+            inSlots("nav-numeric", event.rawSlot, listOf(4)) -> openPage(player, 2, holder.selectedProfileId)
+            inSlots("nav-clan", event.rawSlot, listOf(5)) -> openPage(player, 3, holder.selectedProfileId)
+            inSlots("nav-profile", event.rawSlot, listOf(6)) -> openPage(player, 4, holder.selectedProfileId)
+            inSlots("previous", event.rawSlot, listOf(41)) -> openPage(player, holder.page - 1, holder.selectedProfileId)
+            inSlots("next", event.rawSlot, listOf(43)) -> openPage(player, holder.page + 1, holder.selectedProfileId)
         }
 
         when (holder.page) {
@@ -42,57 +42,57 @@ class AdminMenuListener(
     }
 
     private fun handleOverviewPage(player: Player, slot: Int, holder: AdminMenuHolder) {
-        when (slot) {
-            plugin.guiConfigService.slot("pages.overview.debug", 20) -> {
+        when {
+            inSlots("overview-debug", slot, listOf(20)) -> {
                 val enabled = plugin.diagnosticsService.toggleDebug()
                 player.sendMessage(if (enabled) plugin.settingsLoader.settings.messages.debugEnabled else plugin.settingsLoader.settings.messages.debugDisabled)
                 openPage(player, holder.page, holder.selectedProfileId)
             }
-            plugin.guiConfigService.slot("pages.overview.reload", 21) -> {
+            inSlots("overview-reload", slot, listOf(21)) -> {
                 plugin.reloadPlugin()
                 player.sendMessage(plugin.languageService.get("command.reload.done"))
                 openPage(player, holder.page, holder.selectedProfileId)
             }
-            plugin.guiConfigService.slot("pages.overview.rescan", 22) -> {
+            inSlots("overview-rescan", slot, listOf(22)) -> {
                 plugin.campfireRegistry.fullRescanLoadedChunks()
                 player.sendMessage(plugin.languageService.get("gui.rescan.done", "count" to plugin.campfireRegistry.size().toString()))
                 openPage(player, holder.page, holder.selectedProfileId)
             }
-            plugin.guiConfigService.slot("pages.overview.help", 23) -> {
+            inSlots("overview-help", slot, listOf(23)) -> {
                 player.closeInventory()
                 player.sendMessage(plugin.languageService.get("gui.commands_hint"))
             }
-            plugin.guiConfigService.slot("pages.overview.close", 24) -> player.closeInventory()
+            inSlots("overview-close", slot, listOf(24)) -> player.closeInventory()
         }
     }
 
     private fun handleTogglePage(player: Player, slot: Int, holder: AdminMenuHolder) {
-        when (slot) {
-            plugin.guiConfigService.slot("pages.toggles.night-only", 10) -> toggleAndReopen(player, "activation.night.only-at-night", "Night only", holder, "night.only-at-night")
-            plugin.guiConfigService.slot("pages.toggles.same-group", 11) -> toggleAndReopen(player, "integrations.groups.require-same-group-for-activation", "Same group activation", holder, "integrations.require-same-group-for-activation")
-            plugin.guiConfigService.slot("pages.toggles.worldguard", 12) -> toggleAndReopen(player, "integrations.hooks.worldguard", "WorldGuard hook", holder, "integrations.worldguard")
-            plugin.guiConfigService.slot("pages.toggles.clans", 13) -> toggleAndReopen(player, "integrations.hooks.clans", "Clan hooks", holder, "integrations.clans")
-            plugin.guiConfigService.slot("pages.toggles.placeholderapi", 14) -> toggleAndReopen(player, "integrations.hooks.placeholderapi", "PlaceholderAPI hook", holder, "integrations.placeholderapi")
-            plugin.guiConfigService.slot("pages.toggles.hero-by-group", 15) -> toggleAndReopen(player, "integrations.groups.use-group-size-for-hero-bonus", "Hero bonus by group size", holder, "integrations.use-group-size-for-hero-bonus")
-            plugin.guiConfigService.slot("pages.toggles.xp-pulse", 16) -> toggleAndReopen(player, "gameplay.support.experience-pulse.enabled", "Experience pulse", holder, "gameplay.experience-pulse.enabled")
-            plugin.guiConfigService.slot("pages.toggles.cleanse", 19) -> toggleAndReopen(player, "gameplay.support.cleanse.enabled", "Cleanse", holder, "gameplay.cleanse.enabled")
-            plugin.guiConfigService.slot("pages.toggles.shared-heal", 20) -> toggleAndReopen(player, "gameplay.support.shared-heal.enabled", "Shared heal", holder, "gameplay.shared-heal.enabled")
+        when {
+            inSlots("toggles-night-only", slot, listOf(10)) -> toggleAndReopen(player, "activation.night.only-at-night", "Night only", holder, "night.only-at-night")
+            inSlots("toggles-same-group", slot, listOf(11)) -> toggleAndReopen(player, "integrations.groups.require-same-group-for-activation", "Same group activation", holder, "integrations.require-same-group-for-activation")
+            inSlots("toggles-worldguard", slot, listOf(12)) -> toggleAndReopen(player, "integrations.hooks.worldguard", "WorldGuard hook", holder, "integrations.worldguard")
+            inSlots("toggles-clans", slot, listOf(13)) -> toggleAndReopen(player, "integrations.hooks.clans", "Clan hooks", holder, "integrations.clans")
+            inSlots("toggles-placeholderapi", slot, listOf(14)) -> toggleAndReopen(player, "integrations.hooks.placeholderapi", "PlaceholderAPI hook", holder, "integrations.placeholderapi")
+            inSlots("toggles-hero-by-group", slot, listOf(15)) -> toggleAndReopen(player, "integrations.groups.use-group-size-for-hero-bonus", "Hero bonus by group size", holder, "integrations.use-group-size-for-hero-bonus")
+            inSlots("toggles-xp-pulse", slot, listOf(16)) -> toggleAndReopen(player, "gameplay.support.experience-pulse.enabled", "Experience pulse", holder, "gameplay.experience-pulse.enabled")
+            inSlots("toggles-cleanse", slot, listOf(19)) -> toggleAndReopen(player, "gameplay.support.cleanse.enabled", "Cleanse", holder, "gameplay.cleanse.enabled")
+            inSlots("toggles-shared-heal", slot, listOf(20)) -> toggleAndReopen(player, "gameplay.support.shared-heal.enabled", "Shared heal", holder, "gameplay.shared-heal.enabled")
         }
     }
 
     private fun handleNumericPage(player: Player, slot: Int, click: ClickType, holder: AdminMenuHolder) {
         val multiplier = if (click.isShiftClick) 5.0 else 1.0
-        when (slot) {
-            plugin.guiConfigService.slot("pages.numeric.xp-amount", 10) -> adjustNumber(player, "gameplay.support.experience-pulse.amount", if (click.isLeftClick) -1 else 1, holder, "gameplay.experience-pulse.amount")
-            plugin.guiConfigService.slot("pages.numeric.xp-cooldown", 11) -> adjustNumber(player, "gameplay.support.experience-pulse.cooldown-ticks", if (click.isLeftClick) -(20 * multiplier).toInt() else (20 * multiplier).toInt(), holder, "gameplay.experience-pulse.cooldown-ticks")
-            plugin.guiConfigService.slot("pages.numeric.cleanse-cooldown", 12) -> adjustNumber(player, "gameplay.support.cleanse.cooldown-ticks", if (click.isLeftClick) -(20 * multiplier).toInt() else (20 * multiplier).toInt(), holder, "gameplay.cleanse.cooldown-ticks")
-            plugin.guiConfigService.slot("pages.numeric.shared-heal", 13) -> adjustDouble(player, "gameplay.support.shared-heal.amount", if (click.isLeftClick) -0.5 * multiplier else 0.5 * multiplier, holder, "gameplay.shared-heal.amount")
-            plugin.guiConfigService.slot("pages.numeric.heal-cooldown", 14) -> adjustNumber(player, "gameplay.support.shared-heal.cooldown-ticks", if (click.isLeftClick) -(20 * multiplier).toInt() else (20 * multiplier).toInt(), holder, "gameplay.shared-heal.cooldown-ticks")
-            plugin.guiConfigService.slot("pages.numeric.required-players", 15) -> adjustNumber(player, "activation.requirements.required-players", if (click.isLeftClick) -1 else 1, holder, "campfire.required-players")
-            plugin.guiConfigService.slot("pages.numeric.bonus-threshold", 16) -> adjustNumber(player, "activation.requirements.bonus-threshold", if (click.isLeftClick) -1 else 1, holder, "campfire.bonus-threshold")
-            plugin.guiConfigService.slot("pages.numeric.rest-cycles", 19) -> adjustNumber(player, "activation.rest.rest-cycles-required", if (click.isLeftClick) -1 else 1, holder, "campfire.rest-cycles-required")
-            plugin.guiConfigService.slot("pages.numeric.rest-cooldown", 20) -> adjustNumber(player, "activation.rest.rest-reward-cooldown-ticks", if (click.isLeftClick) -(100 * multiplier).toInt() else (100 * multiplier).toInt(), holder, "campfire.rest-reward-cooldown-ticks")
-            plugin.guiConfigService.slot("pages.numeric.ward-radius", 21) -> adjustDouble(player, "activation.requirements.monster-ward-radius", if (click.isLeftClick) -0.5 * multiplier else 0.5 * multiplier, holder, "campfire.monster-ward-radius")
+        when {
+            inSlots("numeric-xp-amount", slot, listOf(10)) -> adjustNumber(player, "gameplay.support.experience-pulse.amount", if (click.isLeftClick) -1 else 1, holder, "gameplay.experience-pulse.amount")
+            inSlots("numeric-xp-cooldown", slot, listOf(11)) -> adjustNumber(player, "gameplay.support.experience-pulse.cooldown-ticks", if (click.isLeftClick) -(20 * multiplier).toInt() else (20 * multiplier).toInt(), holder, "gameplay.experience-pulse.cooldown-ticks")
+            inSlots("numeric-cleanse-cooldown", slot, listOf(12)) -> adjustNumber(player, "gameplay.support.cleanse.cooldown-ticks", if (click.isLeftClick) -(20 * multiplier).toInt() else (20 * multiplier).toInt(), holder, "gameplay.cleanse.cooldown-ticks")
+            inSlots("numeric-shared-heal", slot, listOf(13)) -> adjustDouble(player, "gameplay.support.shared-heal.amount", if (click.isLeftClick) -0.5 * multiplier else 0.5 * multiplier, holder, "gameplay.shared-heal.amount")
+            inSlots("numeric-heal-cooldown", slot, listOf(14)) -> adjustNumber(player, "gameplay.support.shared-heal.cooldown-ticks", if (click.isLeftClick) -(20 * multiplier).toInt() else (20 * multiplier).toInt(), holder, "gameplay.shared-heal.cooldown-ticks")
+            inSlots("numeric-required-players", slot, listOf(15)) -> adjustNumber(player, "activation.requirements.required-players", if (click.isLeftClick) -1 else 1, holder, "campfire.required-players")
+            inSlots("numeric-bonus-threshold", slot, listOf(16)) -> adjustNumber(player, "activation.requirements.bonus-threshold", if (click.isLeftClick) -1 else 1, holder, "campfire.bonus-threshold")
+            inSlots("numeric-rest-cycles", slot, listOf(19)) -> adjustNumber(player, "activation.rest.rest-cycles-required", if (click.isLeftClick) -1 else 1, holder, "campfire.rest-cycles-required")
+            inSlots("numeric-rest-cooldown", slot, listOf(20)) -> adjustNumber(player, "activation.rest.rest-reward-cooldown-ticks", if (click.isLeftClick) -(100 * multiplier).toInt() else (100 * multiplier).toInt(), holder, "campfire.rest-reward-cooldown-ticks")
+            inSlots("numeric-ward-radius", slot, listOf(21)) -> adjustDouble(player, "activation.requirements.monster-ward-radius", if (click.isLeftClick) -0.5 * multiplier else 0.5 * multiplier, holder, "campfire.monster-ward-radius")
         }
     }
 
@@ -101,27 +101,27 @@ class AdminMenuListener(
             return
         }
         val classes = plugin.settingsLoader.settings.classes.classes.keys.toList()
-        val classSlots = plugin.guiConfigService.slots("pages.classes.class-slots", listOf(10, 11, 12, 13, 14))
+        val classSlots = plugin.guiConfigService.slotsFor("class-entry", listOf(10, 11, 12, 13, 14))
         val index = classSlots.indexOf(slot)
-        if (index >= 0 && index < classes.size) {
-                val classId = classes[index]
-                if (plugin.playerClassService.setSelectedClass(player, classId)) {
-                    player.sendMessage(plugin.languageService.get("command.class.selected", "class" to classId))
-                    openPage(player, holder.page, holder.selectedProfileId)
-                }
+        if (index in classes.indices) {
+            val classId = classes[index]
+            if (plugin.playerClassService.setSelectedClass(player, classId)) {
+                player.sendMessage(plugin.languageService.get("command.class.selected", "class" to classId))
+                openPage(player, holder.page, holder.selectedProfileId)
+            }
         }
     }
 
     private fun handleProfilePage(player: Player, slot: Int, click: ClickType, holder: AdminMenuHolder) {
-        val effectSlots = plugin.guiConfigService.slots("pages.profile.effect-slots", listOf(19, 20, 21, 22, 23))
-        when (slot) {
-            plugin.guiConfigService.slot("pages.profile.feed-players", 11) -> toggleAndReopen(player, "profiles.${holder.selectedProfileId}.feed-players", "Feed players", holder)
-            plugin.guiConfigService.slot("pages.profile.radius", 12) -> adjustDouble(player, "profiles.${holder.selectedProfileId}.radius", if (click.isLeftClick) -0.5 else 0.5, holder)
-            plugin.guiConfigService.slot("pages.profile.swap-profile", 14) -> {
-                val nextProfile = if (holder.selectedProfileId == "normal") "soul" else "normal"
+        val effectSlots = plugin.guiConfigService.slotsFor("profile-effect", listOf(19, 20, 21, 22, 23))
+        when {
+            inSlots("profile-feed-players", slot, listOf(11)) -> toggleAndReopen(player, "profiles.${holder.selectedProfileId}.feed-players", "Feed players", holder)
+            inSlots("profile-radius", slot, listOf(12)) -> adjustDouble(player, "profiles.${holder.selectedProfileId}.radius", if (click.isLeftClick) -0.5 else 0.5, holder)
+            inSlots("profile-next-profile", slot, listOf(14)) -> {
+                val nextProfile = nextProfileId(holder.selectedProfileId)
                 openPage(player, holder.page, nextProfile)
             }
-            in effectSlots -> {
+            slot in effectSlots -> {
                 val effectIndex = effectSlots.indexOf(slot)
                 val keys = plugin.runtimeConfigService.merged().getConfigurationSection("profiles.${holder.selectedProfileId}.effects")?.getKeys(false)?.toList().orEmpty()
                 if (effectIndex >= keys.size) {
@@ -161,5 +161,18 @@ class AdminMenuListener(
 
     private fun openPage(player: Player, page: Int, selectedProfileId: String) {
         plugin.adminMenuService.open(player, page, selectedProfileId)
+    }
+
+    private fun inSlots(key: String, slot: Int, fallback: List<Int>): Boolean {
+        return slot in plugin.guiConfigService.slotsFor(key, fallback)
+    }
+
+    private fun nextProfileId(current: String): String {
+        val profiles = plugin.settingsLoader.settings.profiles.keys.toList()
+        if (profiles.isEmpty()) {
+            return current
+        }
+        val currentIndex = profiles.indexOf(current)
+        return profiles[(if (currentIndex >= 0) currentIndex + 1 else 0) % profiles.size]
     }
 }

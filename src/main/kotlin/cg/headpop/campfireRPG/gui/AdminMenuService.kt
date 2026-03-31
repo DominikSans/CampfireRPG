@@ -6,9 +6,7 @@ import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
-import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
-import org.bukkit.inventory.meta.ItemMeta
 
 class AdminMenuService(
     private val plugin: CampfireRPG,
@@ -16,14 +14,14 @@ class AdminMenuService(
 
     private val serializer = LegacyComponentSerializer.legacySection()
 
-    fun open(player: Player, page: Int = 0, selectedProfileId: String = "normal") {
+    fun open(player: Player, page: Int = 0, selectedProfileId: String = defaultProfileId()) {
         val holder = AdminMenuHolder()
         holder.page = page.coerceIn(0, 4)
-        holder.selectedProfileId = selectedProfileId
+        holder.selectedProfileId = selectedProfileId.takeIf { it in plugin.settingsLoader.settings.profiles } ?: defaultProfileId()
         val inventory = Bukkit.createInventory(holder, plugin.guiConfigService.rows() * 9, serializer.deserialize(plugin.guiConfigService.title()))
         holder.backingInventory = inventory
 
-        fillBorders(inventory)
+        fillDecorations(inventory)
         fillNavigation(inventory, holder.page)
 
         when (holder.page) {
@@ -31,7 +29,7 @@ class AdminMenuService(
             1 -> renderTogglePage(inventory)
             2 -> renderNumericPage(inventory)
             3 -> renderClassesPage(inventory, player)
-            4 -> renderProfileEditorPage(inventory, selectedProfileId)
+            4 -> renderProfileEditorPage(inventory, holder.selectedProfileId)
         }
 
         player.openInventory(inventory)
@@ -42,118 +40,121 @@ class AdminMenuService(
         val integrations = plugin.integrationService.describeIntegrations()
         val settings = plugin.settingsLoader.settings
 
-        inventory.setItem(plugin.guiConfigService.slot("pages.overview.status", 10), createItem(Material.CAMPFIRE, "§6Campfire Status", listOf(
+        placeConfiguredItem(inventory, fallback("overview-status", Material.CAMPFIRE, "§6Campfire Status", listOf(
             "§7Tracked: §f${plugin.campfireRegistry.size()}",
             "§7Allowed worlds: §f${formatSet(settings.restrictions.allowedWorlds)}",
             "§7Blocked worlds: §f${formatSet(settings.restrictions.blockedWorlds)}",
             "§7Night only: §f${settings.night.onlyAtNight}",
-        )))
-        inventory.setItem(plugin.guiConfigService.slot("pages.overview.performance", 11), createItem(Material.BEACON, "§bPerformance", listOf(
+        ), listOf(10)))
+        placeConfiguredItem(inventory, fallback("overview-performance", Material.BEACON, "§bPerformance", listOf(
             "§7Ticks: §f${snapshot.ticksProcessed}",
             "§7Players buffed: §f${snapshot.playersBuffed}",
             "§7Campfires activated: §f${snapshot.campfiresActivated}",
             "§7Avg tick: §f${"%.2f".format(snapshot.averageTickMs)} ms",
             "§7Max tick: §f${"%.2f".format(snapshot.maxTickMs)} ms",
-        )))
-        inventory.setItem(plugin.guiConfigService.slot("pages.overview.integrations", 12), createItem(Material.NAME_TAG, "§dIntegrations", integrations.map { "§7- §f$it" }))
-        inventory.setItem(plugin.guiConfigService.slot("pages.overview.regions", 13), createItem(Material.COMPASS, "§eRegions", listOf(
+        ), listOf(11)))
+        placeConfiguredItem(inventory, fallback("overview-integrations", Material.NAME_TAG, "§dIntegrations", integrations.map { "§7- §f$it" }, listOf(12)))
+        placeConfiguredItem(inventory, fallback("overview-regions", Material.COMPASS, "§eRegions", listOf(
             "§7WorldGuard hook: §f${plugin.integrationService.isWorldGuardEnabled()}",
             "§7Allowed regions: §f${formatSet(settings.restrictions.allowedRegions)}",
             "§7Blocked regions: §f${formatSet(settings.restrictions.blockedRegions)}",
-        )))
-        inventory.setItem(plugin.guiConfigService.slot("pages.overview.player-state", 14), createItem(Material.EXPERIENCE_BOTTLE, "§aPlayer State", listOf(
+        ), listOf(13)))
+        placeConfiguredItem(inventory, fallback("overview-player-state", Material.EXPERIENCE_BOTTLE, "§aPlayer State", listOf(
             "§7Selected class: §f${plugin.playerClassService.getSelectedClassId(player)}",
             "§7Effective class: §f${plugin.auraService.getCurrentClassId(player)}",
             "§7Profile: §f${plugin.auraService.getCurrentProfileId(player)}",
             "§7Aura active: §f${plugin.auraService.isPlayerInActiveCampfire(player)}",
             "§7Campfire type: §f${plugin.auraService.getCurrentCampfireType(player)}",
-        )))
-        inventory.setItem(plugin.guiConfigService.slot("pages.overview.placeholders", 15), createItem(Material.BOOK, "§ePlaceholderAPI", listOf(
+        ), listOf(14)))
+        placeConfiguredItem(inventory, fallback("overview-placeholders", Material.BOOK, "§ePlaceholderAPI", listOf(
             "§7%campfirerpg_tracked_campfires%",
             "§7%campfirerpg_profile%",
             "§7%campfirerpg_class%",
             "§7%campfirerpg_aura_remaining%",
-        )))
-        inventory.setItem(plugin.guiConfigService.slot("pages.overview.debug", 20), createItem(Material.REDSTONE_TORCH, "§cDebug", listOf("§7Enabled: §f${plugin.diagnosticsService.isDebugEnabled()}", "§7Click to toggle debug logging")))
-        inventory.setItem(plugin.guiConfigService.slot("pages.overview.reload", 21), createConfiguredItem("reload", Material.EMERALD, "§aReload", listOf("§7Reload configuration and caches")))
-        inventory.setItem(plugin.guiConfigService.slot("pages.overview.rescan", 22), createConfiguredItem("rescan", Material.SPYGLASS, "§bRescan Campfires", listOf("§7Rescan loaded chunks")))
-        inventory.setItem(plugin.guiConfigService.slot("pages.overview.help", 23), createConfiguredItem("help", Material.BOOK, "§eCommand Help", listOf("§7/crpg help", "§7/crpg gui")))
-        inventory.setItem(plugin.guiConfigService.slot("pages.overview.close", 24), createConfiguredItem("close", Material.BARRIER, "§cClose", listOf("§7Close this panel")))
+        ), listOf(15)))
+        placeConfiguredItem(inventory, fallback("overview-debug", Material.REDSTONE_TORCH, "§cDebug", listOf(
+            "§7Enabled: §f${plugin.diagnosticsService.isDebugEnabled()}",
+            "§7Click to toggle debug logging",
+        ), listOf(20)))
+        placeConfiguredItem(inventory, fallback("overview-reload", Material.EMERALD, "§aReload", listOf("§7Reload configuration and caches"), listOf(21), glow = true))
+        placeConfiguredItem(inventory, fallback("overview-rescan", Material.SPYGLASS, "§bRescan Campfires", listOf("§7Rescan loaded chunks"), listOf(22)))
+        placeConfiguredItem(inventory, fallback("overview-help", Material.BOOK, "§eCommand Help", listOf("§7/crpg help", "§7/crpg gui"), listOf(23)))
+        placeConfiguredItem(inventory, fallback("overview-close", Material.BARRIER, "§cClose", listOf("§7Close this panel"), listOf(24)))
     }
 
     private fun renderTogglePage(inventory: Inventory) {
         val settings = plugin.settingsLoader.settings
-        inventory.setItem(plugin.guiConfigService.slot("pages.toggles.night-only", 10), createToggleItem("Night Only", settings.night.onlyAtNight, "Toggle night restriction"))
-        inventory.setItem(plugin.guiConfigService.slot("pages.toggles.same-group", 11), createToggleItem("Same Group", settings.integrations.requireSameGroupForActivation, "Require same clan/party"))
-        inventory.setItem(plugin.guiConfigService.slot("pages.toggles.worldguard", 12), createToggleItem("WorldGuard Hook", settings.integrations.enableWorldGuard, "Toggle region filter"))
-        inventory.setItem(plugin.guiConfigService.slot("pages.toggles.clans", 13), createToggleItem("Clan Hooks", settings.integrations.enableClanHooks, "Toggle group detection"))
-        inventory.setItem(plugin.guiConfigService.slot("pages.toggles.placeholderapi", 14), createToggleItem("PlaceholderAPI", settings.integrations.enablePlaceholderApi, "Toggle placeholders"))
-        inventory.setItem(plugin.guiConfigService.slot("pages.toggles.hero-by-group", 15), createToggleItem("Hero by Group", settings.integrations.useGroupSizeForHeroBonus, "Toggle hero bonus source"))
-        inventory.setItem(plugin.guiConfigService.slot("pages.toggles.xp-pulse", 16), createToggleItem("XP Pulse", settings.gameplay.enableExperiencePulse, "Toggle experience pulse"))
-        inventory.setItem(plugin.guiConfigService.slot("pages.toggles.cleanse", 19), createToggleItem("Cleanse", settings.gameplay.enableCleanse, "Toggle debuff cleanse"))
-        inventory.setItem(plugin.guiConfigService.slot("pages.toggles.shared-heal", 20), createToggleItem("Shared Heal", settings.gameplay.enableSharedHeal, "Toggle campfire healing"))
+        placeConfiguredItem(inventory, fallback("toggles-night-only", toggleMaterial(settings.night.onlyAtNight), toggleTitle("Night Only"), toggleLore(settings.night.onlyAtNight, "Toggle night restriction"), listOf(10)))
+        placeConfiguredItem(inventory, fallback("toggles-same-group", toggleMaterial(settings.integrations.requireSameGroupForActivation), toggleTitle("Same Group"), toggleLore(settings.integrations.requireSameGroupForActivation, "Require same clan/party"), listOf(11)))
+        placeConfiguredItem(inventory, fallback("toggles-worldguard", toggleMaterial(settings.integrations.enableWorldGuard), toggleTitle("WorldGuard Hook"), toggleLore(settings.integrations.enableWorldGuard, "Toggle region filter"), listOf(12)))
+        placeConfiguredItem(inventory, fallback("toggles-clans", toggleMaterial(settings.integrations.enableClanHooks), toggleTitle("Clan Hooks"), toggleLore(settings.integrations.enableClanHooks, "Toggle group detection"), listOf(13)))
+        placeConfiguredItem(inventory, fallback("toggles-placeholderapi", toggleMaterial(settings.integrations.enablePlaceholderApi), toggleTitle("PlaceholderAPI"), toggleLore(settings.integrations.enablePlaceholderApi, "Toggle placeholders"), listOf(14)))
+        placeConfiguredItem(inventory, fallback("toggles-hero-by-group", toggleMaterial(settings.integrations.useGroupSizeForHeroBonus), toggleTitle("Hero by Group"), toggleLore(settings.integrations.useGroupSizeForHeroBonus, "Toggle hero bonus source"), listOf(15)))
+        placeConfiguredItem(inventory, fallback("toggles-xp-pulse", toggleMaterial(settings.gameplay.enableExperiencePulse), toggleTitle("XP Pulse"), toggleLore(settings.gameplay.enableExperiencePulse, "Toggle experience pulse"), listOf(16)))
+        placeConfiguredItem(inventory, fallback("toggles-cleanse", toggleMaterial(settings.gameplay.enableCleanse), toggleTitle("Cleanse"), toggleLore(settings.gameplay.enableCleanse, "Toggle debuff cleanse"), listOf(19)))
+        placeConfiguredItem(inventory, fallback("toggles-shared-heal", toggleMaterial(settings.gameplay.enableSharedHeal), toggleTitle("Shared Heal"), toggleLore(settings.gameplay.enableSharedHeal, "Toggle campfire healing"), listOf(20)))
     }
 
     private fun renderNumericPage(inventory: Inventory) {
         val settings = plugin.settingsLoader.settings
-        inventory.setItem(plugin.guiConfigService.slot("pages.numeric.xp-amount", 10), createNumericItem("XP Amount", settings.gameplay.experiencePulseAmount.toString(), "-1 / +1"))
-        inventory.setItem(plugin.guiConfigService.slot("pages.numeric.xp-cooldown", 11), createNumericItem("XP Cooldown", settings.gameplay.experiencePulseCooldownTicks.toString(), "-20 / +20"))
-        inventory.setItem(plugin.guiConfigService.slot("pages.numeric.cleanse-cooldown", 12), createNumericItem("Cleanse Cooldown", settings.gameplay.cleanseCooldownTicks.toString(), "-20 / +20"))
-        inventory.setItem(plugin.guiConfigService.slot("pages.numeric.shared-heal", 13), createNumericItem("Shared Heal", settings.gameplay.sharedHealAmount.toString(), "-0.5 / +0.5"))
-        inventory.setItem(plugin.guiConfigService.slot("pages.numeric.heal-cooldown", 14), createNumericItem("Heal Cooldown", settings.gameplay.sharedHealCooldownTicks.toString(), "-20 / +20"))
-        inventory.setItem(plugin.guiConfigService.slot("pages.numeric.required-players", 15), createNumericItem("Required Players", settings.campfire.requiredPlayers.toString(), "-1 / +1"))
-        inventory.setItem(plugin.guiConfigService.slot("pages.numeric.bonus-threshold", 16), createNumericItem("Bonus Threshold", settings.campfire.bonusThreshold.toString(), "-1 / +1"))
-        inventory.setItem(plugin.guiConfigService.slot("pages.numeric.rest-cycles", 19), createNumericItem("Rest Cycles", settings.campfire.restCyclesRequired.toString(), "-1 / +1"))
-        inventory.setItem(plugin.guiConfigService.slot("pages.numeric.rest-cooldown", 20), createNumericItem("Rest Cooldown", settings.campfire.restRewardCooldownTicks.toString(), "-100 / +100"))
-        inventory.setItem(plugin.guiConfigService.slot("pages.numeric.ward-radius", 21), createNumericItem("Ward Radius", settings.campfire.monsterWardRadius.toString(), "-0.5 / +0.5"))
-        inventory.setItem(plugin.guiConfigService.slot("pages.numeric.usage", 22), createItem(Material.OAK_SIGN, "§eUsage", listOf("§7Left click: decrease", "§7Right click: increase", "§7Shift click: stronger step")))
+        placeConfiguredItem(inventory, fallback("numeric-xp-amount", Material.LIGHT_BLUE_DYE, "§bXP Amount", listOf("§7Current: §f${settings.gameplay.experiencePulseAmount}", "§8-1 / +1"), listOf(10)))
+        placeConfiguredItem(inventory, fallback("numeric-xp-cooldown", Material.LIGHT_BLUE_DYE, "§bXP Cooldown", listOf("§7Current: §f${settings.gameplay.experiencePulseCooldownTicks}", "§8-20 / +20"), listOf(11)))
+        placeConfiguredItem(inventory, fallback("numeric-cleanse-cooldown", Material.LIGHT_BLUE_DYE, "§bCleanse Cooldown", listOf("§7Current: §f${settings.gameplay.cleanseCooldownTicks}", "§8-20 / +20"), listOf(12)))
+        placeConfiguredItem(inventory, fallback("numeric-shared-heal", Material.LIGHT_BLUE_DYE, "§bShared Heal", listOf("§7Current: §f${settings.gameplay.sharedHealAmount}", "§8-0.5 / +0.5"), listOf(13)))
+        placeConfiguredItem(inventory, fallback("numeric-heal-cooldown", Material.LIGHT_BLUE_DYE, "§bHeal Cooldown", listOf("§7Current: §f${settings.gameplay.sharedHealCooldownTicks}", "§8-20 / +20"), listOf(14)))
+        placeConfiguredItem(inventory, fallback("numeric-required-players", Material.LIGHT_BLUE_DYE, "§bRequired Players", listOf("§7Current: §f${settings.campfire.requiredPlayers}", "§8-1 / +1"), listOf(15)))
+        placeConfiguredItem(inventory, fallback("numeric-bonus-threshold", Material.LIGHT_BLUE_DYE, "§bBonus Threshold", listOf("§7Current: §f${settings.campfire.bonusThreshold}", "§8-1 / +1"), listOf(16)))
+        placeConfiguredItem(inventory, fallback("numeric-rest-cycles", Material.LIGHT_BLUE_DYE, "§bRest Cycles", listOf("§7Current: §f${settings.campfire.restCyclesRequired}", "§8-1 / +1"), listOf(19)))
+        placeConfiguredItem(inventory, fallback("numeric-rest-cooldown", Material.LIGHT_BLUE_DYE, "§bRest Cooldown", listOf("§7Current: §f${settings.campfire.restRewardCooldownTicks}", "§8-100 / +100"), listOf(20)))
+        placeConfiguredItem(inventory, fallback("numeric-ward-radius", Material.LIGHT_BLUE_DYE, "§bWard Radius", listOf("§7Current: §f${settings.campfire.monsterWardRadius}", "§8-0.5 / +0.5"), listOf(21)))
+        placeConfiguredItem(inventory, fallback("numeric-usage", Material.OAK_SIGN, "§eUsage", listOf("§7Left click: decrease", "§7Right click: increase", "§7Shift click: stronger step"), listOf(22)))
     }
 
     private fun renderClassesPage(inventory: Inventory, player: Player) {
         val settings = plugin.settingsLoader.settings
         if (!settings.classes.enabled) {
-            inventory.setItem(plugin.guiConfigService.slot("pages.classes.disabled", 10), createItem(Material.BARRIER, "§cInternal Classes Disabled", listOf(
+            placeConfiguredItem(inventory, fallback("classes-disabled", Material.BARRIER, "§cInternal Classes Disabled", listOf(
                 "§7This server relies on external class systems.",
                 "§7CampfireRPG class perks are disabled by default.",
-            )))
-            inventory.setItem(plugin.guiConfigService.slot("pages.classes.clan-info", 11), createItem(Material.NAME_TAG, "§bUltimateClans", listOf(
+            ), listOf(10)))
+            placeConfiguredItem(inventory, fallback("classes-clan-info", Material.NAME_TAG, "§bUltimateClans", listOf(
                 "§7Tag: §f${plugin.auraService.getClanTag(player)}",
                 "§7Role: §f${plugin.auraService.getClanRole(player)}",
                 "§7Size: §f${plugin.auraService.getClanSize(player)}",
                 "§7Own territory: §f${plugin.auraService.isInOwnClanTerritory(player)}",
-            )))
-            inventory.setItem(plugin.guiConfigService.slot("pages.classes.placeholders", 20), createItem(Material.PAPER, "§bPlaceholders", listOf(
+            ), listOf(11)))
+            placeConfiguredItem(inventory, fallback("classes-placeholders", Material.PAPER, "§bPlaceholders", listOf(
                 "§7%campfirerpg_uclans_tag%",
                 "§7%campfirerpg_uclans_role%",
                 "§7%campfirerpg_uclans_size%",
                 "§7%campfirerpg_uclans_own_territory%",
-            )))
+            ), listOf(20)))
             return
         }
 
+        val classSlots = plugin.guiConfigService.slotsFor("class-entry", listOf(10, 11, 12, 13, 14))
         val classes = settings.classes.classes.values.toList()
         val materials = listOf(Material.IRON_SWORD, Material.BLAZE_ROD, Material.BOW, Material.LEATHER_CHESTPLATE, Material.BOOK)
-        val classSlots = plugin.guiConfigService.slots("pages.classes.class-slots", listOf(10, 11, 12, 13, 14))
 
         classes.take(classSlots.size).forEachIndexed { index, classPerk ->
             val selected = plugin.playerClassService.getSelectedClassId(player) == classPerk.id
             val marker = if (selected) "§a[Selected]" else "§7[Click to select]"
-            inventory.setItem(classSlots[index], createItem(materials.getOrElse(index) { Material.BOOK }, classPerk.displayName, listOf(
+            placeSpecificItem(inventory, fallback("class-entry", materials.getOrElse(index) { Material.BOOK }, classPerk.displayName, listOf(
                 classPerk.description,
                 "§7Permission: §f${classPerk.permission}",
                 "§7Global effects: §f${classPerk.globalEffects.size}",
                 "§7Normal perks: §f${classPerk.normalEffects.size}",
                 "§7Soul perks: §f${classPerk.soulEffects.size}",
                 marker,
-            )))
+            ), classSlots), classSlots[index])
         }
 
-        inventory.setItem(plugin.guiConfigService.slot("pages.classes.default-class", 19), createItem(Material.NETHER_STAR, "§6Default Class", listOf(
+        placeConfiguredItem(inventory, fallback("classes-default-class", Material.NETHER_STAR, "§6Default Class", listOf(
             "§7Current default: §f${settings.classes.defaultClassId}",
             "§7Selected class: §f${plugin.playerClassService.getSelectedClassId(player)}",
             "§7Effective class: §f${plugin.playerClassService.getEffectiveClassId(player)}",
-        )))
-        inventory.setItem(plugin.guiConfigService.slot("pages.classes.placeholders", 20), createItem(Material.PAPER, "§bPlaceholders", listOf(
+        ), listOf(19)))
+        placeConfiguredItem(inventory, fallback("classes-placeholders", Material.PAPER, "§bPlaceholders", listOf(
             "§7%campfirerpg_tracked_campfires%",
             "§7%campfirerpg_debug%",
             "§7%campfirerpg_profile%",
@@ -163,106 +164,126 @@ class AdminMenuService(
             "§7%campfirerpg_aura_remaining%",
             "§7%campfirerpg_campfire_type%",
             "§7%campfirerpg_hero_bonus%",
-        )))
+        ), listOf(20)))
     }
 
     private fun renderProfileEditorPage(inventory: Inventory, selectedProfileId: String) {
-        val profile = plugin.settingsLoader.settings.profiles[selectedProfileId] ?: plugin.settingsLoader.settings.profiles.values.first()
-        val section = plugin.runtimeConfigService.merged().getConfigurationSection("profiles.${profile.id}.effects")
+        val profileIds = plugin.settingsLoader.settings.profiles.keys.toList()
+        val profileId = selectedProfileId.takeIf { it in plugin.settingsLoader.settings.profiles } ?: profileIds.first()
+        val profile = plugin.settingsLoader.settings.profiles.getValue(profileId)
+        val section = plugin.runtimeConfigService.merged().getConfigurationSection("profiles.$profileId.effects")
         val effectKeys = section?.getKeys(false)?.toList().orEmpty()
-        val effectSlots = plugin.guiConfigService.slots("pages.profile.effect-slots", listOf(19, 20, 21, 22, 23))
+        val effectSlots = plugin.guiConfigService.slotsFor("profile-effect", listOf(19, 20, 21, 22, 23))
 
-        inventory.setItem(plugin.guiConfigService.slot("pages.profile.selected-profile", 10), createItem(Material.CAMPFIRE, "§6Selected Profile", listOf(
+        placeConfiguredItem(inventory, fallback("profile-selected", Material.CAMPFIRE, "§6Selected Profile", listOf(
             "§7Id: §f${profile.id}",
             "§7Material: §f${profile.material}",
             "§7Radius: §f${profile.radius}",
-        )))
-        inventory.setItem(plugin.guiConfigService.slot("pages.profile.feed-players", 11), createToggleItem("Feed Players", profile.feedPlayers, "Toggle feed-players for this profile"))
-        inventory.setItem(plugin.guiConfigService.slot("pages.profile.radius", 12), createNumericItem("Profile Radius", profile.radius.toString(), "-0.5 / +0.5"))
-        inventory.setItem(plugin.guiConfigService.slot("pages.profile.usage", 13), createItem(Material.OAK_SIGN, "§eEditor Usage", listOf(
+            "§7Available: §f${profileIds.joinToString()}",
+        ), listOf(10)))
+        placeConfiguredItem(inventory, fallback("profile-feed-players", toggleMaterial(profile.feedPlayers), toggleTitle("Feed Players"), toggleLore(profile.feedPlayers, "Toggle feed-players for this profile"), listOf(11)))
+        placeConfiguredItem(inventory, fallback("profile-radius", Material.LIGHT_BLUE_DYE, "§bProfile Radius", listOf("§7Current: §f${profile.radius}", "§8-0.5 / +0.5"), listOf(12)))
+        placeConfiguredItem(inventory, fallback("profile-usage", Material.OAK_SIGN, "§eEditor Usage", listOf(
             "§7Left click decrease",
             "§7Right click increase",
             "§7Shift = bigger change",
-        )))
-        inventory.setItem(plugin.guiConfigService.slot("pages.profile.swap-profile", 14), createItem(Material.SOUL_CAMPFIRE, "§bSwap Profile", listOf("§7Click to switch normal/soul profile")))
+        ), listOf(13)))
+        placeConfiguredItem(inventory, fallback("profile-next-profile", Material.SOUL_CAMPFIRE, "§bNext Profile", listOf(
+            "§7Current: §f$profileId",
+            "§7Click to cycle available profiles",
+        ), listOf(14)))
 
         effectKeys.take(effectSlots.size).forEachIndexed { index, effectKey ->
-            val effectPath = "profiles.${profile.id}.effects.$effectKey"
+            val effectPath = "profiles.$profileId.effects.$effectKey"
             val effectSection = plugin.runtimeConfigService.merged().getConfigurationSection(effectPath) ?: return@forEachIndexed
-            inventory.setItem(effectSlots[index], createItem(Material.POTION, "§dEffect: $effectKey", listOf(
+            placeSpecificItem(inventory, fallback("profile-effect", Material.POTION, "§dEffect: $effectKey", listOf(
                 "§7Type: §f${effectSection.getString("type")}",
                 "§7Amplifier: §f${effectSection.getInt("amplifier")}",
                 "§7Duration: §f${effectSection.getInt("duration-ticks")}",
                 "§8Left/right changes amplifier",
                 "§8Shift-left/right changes duration",
-            )))
+            ), effectSlots), effectSlots[index])
         }
     }
 
     private fun fillNavigation(inventory: Inventory, page: Int) {
-        inventory.setItem(plugin.guiConfigService.slot("navigation.overview", 2), createConfiguredItem("nav-overview", Material.MAP, "§eOverview", listOf("§7Page 1")))
-        inventory.setItem(plugin.guiConfigService.slot("navigation.toggles", 3), createConfiguredItem("nav-toggles", Material.LEVER, "§eToggles", listOf("§7Page 2")))
-        inventory.setItem(plugin.guiConfigService.slot("navigation.numeric", 4), createConfiguredItem("nav-numeric", Material.REPEATER, "§eNumeric Tuning", listOf("§7Page 3")))
-        inventory.setItem(plugin.guiConfigService.slot("navigation.clan", 5), createConfiguredItem("nav-clan", Material.ENCHANTED_BOOK, "§eClan & Placeholders", listOf("§7Page 4")))
-        inventory.setItem(plugin.guiConfigService.slot("navigation.profile", 6), createConfiguredItem("nav-profile", Material.BREWING_STAND, "§eProfile Editor", listOf("§7Page 5")))
+        placeConfiguredItem(inventory, fallback("nav-overview", Material.MAP, "§eOverview", listOf("§7Page 1"), listOf(2)))
+        placeConfiguredItem(inventory, fallback("nav-toggles", Material.LEVER, "§eToggles", listOf("§7Page 2"), listOf(3)))
+        placeConfiguredItem(inventory, fallback("nav-numeric", Material.REPEATER, "§eNumeric Tuning", listOf("§7Page 3"), listOf(4)))
+        placeConfiguredItem(inventory, fallback("nav-clan", Material.ENCHANTED_BOOK, "§eClan & Placeholders", listOf("§7Page 4"), listOf(5)))
+        placeConfiguredItem(inventory, fallback("nav-profile", Material.BREWING_STAND, "§eProfile Editor", listOf("§7Page 5"), listOf(6)))
 
         if (page > 0) {
-            inventory.setItem(plugin.guiConfigService.slot("navigation.previous", 41), createConfiguredItem("previous", Material.ARROW, "§fPrevious Page", listOf("§7Go to page ${page}")))
+            placeConfiguredItem(inventory, fallback("previous", Material.ARROW, "§fPrevious Page", listOf("§7Go to previous page"), listOf(41)))
         }
         if (page < 4) {
-            inventory.setItem(plugin.guiConfigService.slot("navigation.next", 43), createConfiguredItem("next", Material.ARROW, "§fNext Page", listOf("§7Go to page ${page + 2}")))
+            placeConfiguredItem(inventory, fallback("next", Material.ARROW, "§fNext Page", listOf("§7Go to next page"), listOf(43)))
         }
     }
 
-    private fun createItem(material: Material, name: String, lore: List<String>): ItemStack {
-        return createItem(
-            cg.headpop.campfireRPG.gui.GuiItemSpec(
-                material = material,
-                amount = 1,
-                name = name,
-                lore = lore,
-                customModelData = null,
-                glow = false,
-                itemFlags = emptySet(),
-                enchants = emptyMap(),
-                skullOwner = null,
-            )
-        )
+    private fun fillDecorations(inventory: Inventory) {
+        plugin.guiConfigService.decorationItems().forEach { spec ->
+            placeConfiguredItem(inventory, spec)
+        }
     }
 
-    private fun createConfiguredItem(key: String, fallbackMaterial: Material, fallbackName: String, fallbackLore: List<String>): ItemStack {
-        return createItem(plugin.guiConfigService.item(key, fallbackMaterial, fallbackName, fallbackLore))
+    private fun placeConfiguredItem(inventory: Inventory, fallback: GuiItemSpec) {
+        val spec = plugin.guiConfigService.item(fallback.key, fallback)
+        val item = createItem(spec)
+        spec.slots.filter { it in 0 until inventory.size }.forEach { inventory.setItem(it, item.clone()) }
     }
 
-    private fun createItem(spec: cg.headpop.campfireRPG.gui.GuiItemSpec): ItemStack {
+    private fun placeSpecificItem(inventory: Inventory, fallback: GuiItemSpec, slot: Int) {
+        if (slot !in 0 until inventory.size) {
+            return
+        }
+        val spec = plugin.guiConfigService.item(fallback.key, fallback)
+        inventory.setItem(slot, createItem(spec))
+    }
+
+    private fun createItem(spec: GuiItemSpec): ItemStack {
         val item = ItemStack(spec.material, spec.amount)
         val meta = item.itemMeta
         meta.displayName(serializer.deserialize(spec.name))
         meta.lore(spec.lore.map(serializer::deserialize))
-        spec.customModelData?.let(meta::setCustomModelData)
         plugin.guiConfigService.applyExtraMeta(meta, spec)
         item.itemMeta = meta
         return item
     }
 
-    private fun createToggleItem(name: String, enabled: Boolean, hint: String): ItemStack {
-        val material = if (enabled) Material.LIME_DYE else Material.GRAY_DYE
+    private fun toggleMaterial(enabled: Boolean): Material = if (enabled) Material.LIME_DYE else Material.GRAY_DYE
+
+    private fun toggleTitle(name: String): String = "§e$name"
+
+    private fun toggleLore(enabled: Boolean, hint: String): List<String> {
         val state = if (enabled) "§aEnabled" else "§cDisabled"
-        return createItem(material, "§e$name", listOf("§7State: $state", "§8$hint"))
+        return listOf("§7State: $state", "§8$hint")
     }
 
-    private fun createNumericItem(name: String, value: String, controls: String): ItemStack {
-        return createItem(Material.LIGHT_BLUE_DYE, "§b$name", listOf("§7Current: §f$value", "§8$controls"))
+    private fun fallback(
+        key: String,
+        material: Material,
+        name: String,
+        lore: List<String>,
+        slots: List<Int>,
+        glow: Boolean = false,
+    ): GuiItemSpec {
+        return GuiItemSpec(
+            key = key,
+            material = material,
+            amount = 1,
+            name = name,
+            lore = lore,
+            glow = glow,
+            itemFlags = emptySet(),
+            enchants = emptyMap(),
+            skullOwner = null,
+            itemModel = null,
+            slots = slots,
+        )
     }
 
-    private fun fillBorders(inventory: Inventory) {
-        val filler = createConfiguredItem("border", Material.GRAY_STAINED_GLASS_PANE, "§8", emptyList())
-        plugin.guiConfigService.slots("border-slots", listOf(0, 1, 7, 8, 9, 17, 18, 26, 27, 35, 36, 37, 38, 39, 40, 42, 44))
-            .filter { it in 0 until inventory.size }
-            .forEach { inventory.setItem(it, filler) }
-    }
+    private fun formatSet(values: Set<String>): String = if (values.isEmpty()) "all" else values.joinToString()
 
-    private fun formatSet(values: Set<String>): String {
-        return if (values.isEmpty()) "all" else values.joinToString()
-    }
+    private fun defaultProfileId(): String = plugin.settingsLoader.settings.profiles.keys.firstOrNull() ?: "normal"
 }
