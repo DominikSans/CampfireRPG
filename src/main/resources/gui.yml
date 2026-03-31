@@ -1,6 +1,6 @@
 gui:
   title: "lang:gui.title"
-  rows: 5
+  rows: 6
 
 # ============================================================
 # Syntax
@@ -14,95 +14,72 @@ gui:
 #
 # slots:
 #   - 0-8
-#   - 36-44
+#   - 45-53
 #
 # item_model: minecraft:example_model
 # Solo funciona si tu servidor soporta esta API.
 
 items:
-  nav-overview:
-    material: MAP
-    name: "lang:gui.nav.overview.name"
-    lore:
-      - "lang:gui.nav.overview.lore"
-    slot: 2
-
-  nav-toggles:
-    material: LEVER
-    name: "lang:gui.nav.toggles.name"
-    lore:
-      - "lang:gui.nav.toggles.lore"
-    slot: 3
-
-  nav-numeric:
-    material: REPEATER
-    name: "lang:gui.nav.numeric.name"
-    lore:
-      - "lang:gui.nav.numeric.lore"
-    slot: 4
-
-  nav-clan:
-    material: ENCHANTED_BOOK
-    name: "lang:gui.nav.clan.name"
-    lore:
-      - "lang:gui.nav.clan.lore"
-    slot: 5
-
-  nav-profile:
-    material: BREWING_STAND
-    name: "lang:gui.nav.profile.name"
-    lore:
-      - "lang:gui.nav.profile.lore"
-    slot: 6
+  page-info:
+    material: PIGLIN_HEAD
+    name: "&6Page Info"
+    slot: 13
 
   previous:
     material: ARROW
     name: "lang:gui.nav.previous.name"
     lore:
       - "lang:gui.nav.previous.lore"
-    slot: 41
+    slot: 38
 
   next:
     material: ARROW
     name: "lang:gui.nav.next.name"
     lore:
       - "lang:gui.nav.next.lore"
-    slot: 43
+    slot: 42
+
+  close-menu:
+    material: BARRIER
+    name: "&cClose Menu"
+    lore:
+      - "lang:gui.close.lore"
+    slot: 40
 
   overview-status:
     material: CAMPFIRE
     name: "&6Campfire Status"
-    slot: 10
+    slot: 20
 
   overview-performance:
-    material: BEACON
+    material: CLOCK
     name: "&bPerformance"
-    slot: 11
+    slot: 21
 
   overview-integrations:
     material: NAME_TAG
     name: "&dIntegrations"
-    slot: 12
+    slot: 22
 
   overview-regions:
     material: COMPASS
     name: "&eRegions"
-    slot: 13
+    slot: 23
 
   overview-player-state:
-    material: EXPERIENCE_BOTTLE
+    material: PLAYER_HEAD
     name: "&aPlayer State"
-    slot: 14
+    slot: 24
 
   overview-placeholders:
-    material: BOOK
-    name: "&ePlaceholderAPI"
-    slot: 15
+    material: PAPER
+    name: "&fPlaceholders"
+    slot: 29
 
   overview-debug:
     material: REDSTONE_TORCH
     name: "&cDebug"
-    slot: 20
+    slot: 30
 
   overview-reload:
     material: EMERALD
@@ -110,196 +87,187 @@ items:
     lore:
       - "lang:gui.reload.lore"
     glow: true
-    slot: 21
+    slot: 31
 
   overview-rescan:
     material: SPYGLASS
     name: "lang:gui.rescan.name"
     lore:
       - "lang:gui.rescan.lore"
-    slot: 22
+    slot: 32
 
   overview-help:
-    material: BOOK
+    material: WRITABLE_BOOK
     name: "lang:gui.help.name"
     lore:
       - "lang:gui.help.lore1"
       - "lang:gui.help.lore2"
-    slot: 23
-
-  overview-close:
-    material: BARRIER
-    name: "lang:gui.close.name"
-    lore:
-      - "lang:gui.close.lore"
-    slot: 24
+    slot: 33
 
   toggles-night-only:
-    material: LIME_DYE
+    material: PAPER
     name: "&eNight Only"
-    slot: 10
+    slot: 20
 
   toggles-same-group:
-    material: LIME_DYE
+    material: PAPER
     name: "&eSame Group"
-    slot: 11
-
-  toggles-worldguard:
-    material: LIME_DYE
-    name: "&eWorldGuard Hook"
-    slot: 12
-
-  toggles-clans:
-    material: LIME_DYE
-    name: "&eClan Hooks"
-    slot: 13
-
-  toggles-placeholderapi:
-    material: LIME_DYE
-    name: "&ePlaceholderAPI"
-    slot: 14
-
-  toggles-hero-by-group:
-    material: LIME_DYE
-    name: "&eHero by Group"
-    slot: 15
-
-  toggles-xp-pulse:
-    material: LIME_DYE
-    name: "&eXP Pulse"
-    slot: 16
-
-  toggles-cleanse:
-    material: LIME_DYE
-    name: "&eCleanse"
-    slot: 19
-
-  toggles-shared-heal:
-    material: LIME_DYE
-    name: "&eShared Heal"
-    slot: 20
-
-  numeric-xp-amount:
-    material: LIGHT_BLUE_DYE
-    name: "&bXP Amount"
-    slot: 10
-
-  numeric-xp-cooldown:
-    material: LIGHT_BLUE_DYE
-    name: "&bXP Cooldown"
-    slot: 11
-
-  numeric-cleanse-cooldown:
-    material: LIGHT_BLUE_DYE
-    name: "&bCleanse Cooldown"
-    slot: 12
-
-  numeric-shared-heal:
-    material: LIGHT_BLUE_DYE
-    name: "&bShared Heal"
-    slot: 13
-
-  numeric-heal-cooldown:
-    material: LIGHT_BLUE_DYE
-    name: "&bHeal Cooldown"
-    slot: 14
-
-  numeric-required-players:
-    material: LIGHT_BLUE_DYE
-    name: "&bRequired Players"
-    slot: 15
-
-  numeric-bonus-threshold:
-    material: LIGHT_BLUE_DYE
-    name: "&bBonus Threshold"
-    slot: 16
-
-  numeric-rest-cycles:
-    material: LIGHT_BLUE_DYE
-    name: "&bRest Cycles"
-    slot: 19
-
-  numeric-rest-cooldown:
-    material: LIGHT_BLUE_DYE
-    name: "&bRest Cooldown"
-    slot: 20
-
-  numeric-ward-radius:
-    material: LIGHT_BLUE_DYE
-    name: "&bWard Radius"
     slot: 21
 
-  numeric-usage:
-    material: OAK_SIGN
-    name: "&eUsage"
+  toggles-worldguard:
+    material: PAPER
+    name: "&eWorldGuard Hook"
     slot: 22
 
+  toggles-clans:
+    material: PAPER
+    name: "&eClan Hooks"
+    slot: 23
+
+  toggles-placeholderapi:
+    material: PAPER
+    name: "&ePlaceholderAPI"
+    slot: 24
+
+  toggles-hero-by-group:
+    material: PAPER
+    name: "&eHero by Group"
+    slot: 29
+
+  toggles-xp-pulse:
+    material: PAPER
+    name: "&eXP Pulse"
+    slot: 30
+
+  toggles-cleanse:
+    material: PAPER
+    name: "&eCleanse"
+    slot: 31
+
+  toggles-shared-heal:
+    material: PAPER
+    name: "&eShared Heal"
+    slot: 32
+
+  numeric-xp-amount:
+    material: PAPER
+    name: "&bXP Amount"
+    slot: 20
+
+  numeric-xp-cooldown:
+    material: PAPER
+    name: "&bXP Cooldown"
+    slot: 21
+
+  numeric-cleanse-cooldown:
+    material: PAPER
+    name: "&bCleanse Cooldown"
+    slot: 22
+
+  numeric-shared-heal:
+    material: PAPER
+    name: "&bShared Heal"
+    slot: 23
+
+  numeric-heal-cooldown:
+    material: PAPER
+    name: "&bHeal Cooldown"
+    slot: 24
+
+  numeric-required-players:
+    material: PAPER
+    name: "&bRequired Players"
+    slot: 29
+
+  numeric-bonus-threshold:
+    material: PAPER
+    name: "&bBonus Threshold"
+    slot: 30
+
+  numeric-rest-cycles:
+    material: PAPER
+    name: "&bRest Cycles"
+    slot: 31
+
+  numeric-rest-cooldown:
+    material: PAPER
+    name: "&bRest Cooldown"
+    slot: 32
+
+  numeric-ward-radius:
+    material: PAPER
+    name: "&bWard Radius"
+    slot: 33
+
   classes-disabled:
-    material: BARRIER
+    material: PAPER
     name: "&cAdvanced systems disabled"
-    slot: 10
+    slot: 20
 
   classes-clan-info:
-    material: COMPASS
+    material: PAPER
     name: "&bAdvanced hooks"
-    slot: 11
+    slot: 21
 
   class-entry:
-    material: BOOK
+    material: PAPER
     name: "&eClass"
     slots:
-      - 10-14
+      - 20-24
 
   classes-default-class:
-    material: NETHER_STAR
+    material: PAPER
     name: "&6Default Class"
-    slot: 19
+    slot: 29
 
   classes-placeholders:
     material: PAPER
     name: "&bPlaceholders"
-    slot: 20
+    slot: 30
 
   profile-selected:
-    material: CAMPFIRE
+    material: PAPER
     name: "&6Selected Profile"
-    slot: 10
+    slot: 20
 
   profile-feed-players:
-    material: LIME_DYE
+    material: PAPER
     name: "&eFeed Players"
-    slot: 11
+    slot: 21
 
   profile-radius:
-    material: LIGHT_BLUE_DYE
+    material: PAPER
     name: "&bProfile Radius"
-    slot: 12
+    slot: 22
 
   profile-usage:
-    material: OAK_SIGN
+    material: PAPER
     name: "&eEditor Usage"
-    slot: 13
+    slot: 23
 
   profile-next-profile:
     material: SOUL_CAMPFIRE
     name: "&bNext Profile"
-    slot: 14
+    slot: 24
 
   profile-effect:
-    material: POTION
+    material: PAPER
     name: "&dEffect"
     slots:
-      - 19-23
+      - 29-33
 
 items-decorate:
   border:
-    material: GRAY_STAINED_GLASS_PANE
+    material: LIME_STAINED_GLASS_PANE
     name: "&8"
     slots:
-      - 0-1
-      - 7-9
-      - 17-18
-      - 26-27
-      - 35-40
-      - 42
+      - 0-8
+      - 9
+      - 17
+      - 18
+      - 26
+      - 27
+      - 35
+      - 36
       - 44
+      - 45-53

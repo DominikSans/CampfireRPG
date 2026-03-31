@@ -23,13 +23,12 @@ class AdminMenuListener(
         }
 
         when {
-            inSlots("nav-overview", event.rawSlot, listOf(2)) -> openPage(player, 0, holder.selectedProfileId)
-            inSlots("nav-toggles", event.rawSlot, listOf(3)) -> openPage(player, 1, holder.selectedProfileId)
-            inSlots("nav-numeric", event.rawSlot, listOf(4)) -> openPage(player, 2, holder.selectedProfileId)
-            inSlots("nav-clan", event.rawSlot, listOf(5)) -> openPage(player, 3, holder.selectedProfileId)
-            inSlots("nav-profile", event.rawSlot, listOf(6)) -> openPage(player, 4, holder.selectedProfileId)
-            inSlots("previous", event.rawSlot, listOf(41)) -> openPage(player, holder.page - 1, holder.selectedProfileId)
-            inSlots("next", event.rawSlot, listOf(43)) -> openPage(player, holder.page + 1, holder.selectedProfileId)
+            inSlots("previous", event.rawSlot, listOf(38)) -> openPage(player, holder.page - 1, holder.selectedProfileId)
+            inSlots("next", event.rawSlot, listOf(42)) -> openPage(player, holder.page + 1, holder.selectedProfileId)
+            inSlots("close-menu", event.rawSlot, listOf(40)) -> {
+                player.closeInventory()
+                return
+            }
         }
 
         when (holder.page) {
@@ -43,56 +42,55 @@ class AdminMenuListener(
 
     private fun handleOverviewPage(player: Player, slot: Int, holder: AdminMenuHolder) {
         when {
-            inSlots("overview-debug", slot, listOf(20)) -> {
+            inSlots("overview-debug", slot, listOf(30)) -> {
                 val enabled = plugin.diagnosticsService.toggleDebug()
                 player.sendMessage(if (enabled) plugin.settingsLoader.settings.messages.debugEnabled else plugin.settingsLoader.settings.messages.debugDisabled)
                 openPage(player, holder.page, holder.selectedProfileId)
             }
-            inSlots("overview-reload", slot, listOf(21)) -> {
+            inSlots("overview-reload", slot, listOf(31)) -> {
                 plugin.reloadPlugin()
                 player.sendMessage(plugin.languageService.get("command.reload.done"))
                 openPage(player, holder.page, holder.selectedProfileId)
             }
-            inSlots("overview-rescan", slot, listOf(22)) -> {
+            inSlots("overview-rescan", slot, listOf(32)) -> {
                 plugin.campfireRegistry.fullRescanLoadedChunks()
                 player.sendMessage(plugin.languageService.get("gui.rescan.done", "count" to plugin.campfireRegistry.size().toString()))
                 openPage(player, holder.page, holder.selectedProfileId)
             }
-            inSlots("overview-help", slot, listOf(23)) -> {
+            inSlots("overview-help", slot, listOf(33)) -> {
                 player.closeInventory()
                 player.sendMessage(plugin.languageService.get("gui.commands_hint"))
             }
-            inSlots("overview-close", slot, listOf(24)) -> player.closeInventory()
         }
     }
 
     private fun handleTogglePage(player: Player, slot: Int, holder: AdminMenuHolder) {
         when {
-            inSlots("toggles-night-only", slot, listOf(10)) -> toggleAndReopen(player, "activation.night.only-at-night", "Night only", holder, "night.only-at-night")
-            inSlots("toggles-same-group", slot, listOf(11)) -> toggleAndReopen(player, "integrations.groups.require-same-group-for-activation", "Same group activation", holder, "integrations.require-same-group-for-activation")
-            inSlots("toggles-worldguard", slot, listOf(12)) -> toggleAndReopen(player, "integrations.hooks.worldguard", "WorldGuard hook", holder, "integrations.worldguard")
-            inSlots("toggles-clans", slot, listOf(13)) -> toggleAndReopen(player, "integrations.hooks.clans", "Clan hooks", holder, "integrations.clans")
-            inSlots("toggles-placeholderapi", slot, listOf(14)) -> toggleAndReopen(player, "integrations.hooks.placeholderapi", "PlaceholderAPI hook", holder, "integrations.placeholderapi")
-            inSlots("toggles-hero-by-group", slot, listOf(15)) -> toggleAndReopen(player, "integrations.groups.use-group-size-for-hero-bonus", "Hero bonus by group size", holder, "integrations.use-group-size-for-hero-bonus")
-            inSlots("toggles-xp-pulse", slot, listOf(16)) -> toggleAndReopen(player, "gameplay.support.experience-pulse.enabled", "Experience pulse", holder, "gameplay.experience-pulse.enabled")
-            inSlots("toggles-cleanse", slot, listOf(19)) -> toggleAndReopen(player, "gameplay.support.cleanse.enabled", "Cleanse", holder, "gameplay.cleanse.enabled")
-            inSlots("toggles-shared-heal", slot, listOf(20)) -> toggleAndReopen(player, "gameplay.support.shared-heal.enabled", "Shared heal", holder, "gameplay.shared-heal.enabled")
+            inSlots("toggles-night-only", slot, listOf(20)) -> toggleAndReopen(player, "activation.night.only-at-night", "Night only", holder, "night.only-at-night")
+            inSlots("toggles-same-group", slot, listOf(21)) -> toggleAndReopen(player, "integrations.groups.require-same-group-for-activation", "Same group activation", holder, "integrations.require-same-group-for-activation")
+            inSlots("toggles-worldguard", slot, listOf(22)) -> toggleAndReopen(player, "integrations.hooks.worldguard", "WorldGuard hook", holder, "integrations.worldguard")
+            inSlots("toggles-clans", slot, listOf(23)) -> toggleAndReopen(player, "integrations.hooks.clans", "Clan hooks", holder, "integrations.clans")
+            inSlots("toggles-placeholderapi", slot, listOf(24)) -> toggleAndReopen(player, "integrations.hooks.placeholderapi", "PlaceholderAPI hook", holder, "integrations.placeholderapi")
+            inSlots("toggles-hero-by-group", slot, listOf(29)) -> toggleAndReopen(player, "integrations.groups.use-group-size-for-hero-bonus", "Hero bonus by group size", holder, "integrations.use-group-size-for-hero-bonus")
+            inSlots("toggles-xp-pulse", slot, listOf(30)) -> toggleAndReopen(player, "gameplay.support.experience-pulse.enabled", "Experience pulse", holder, "gameplay.experience-pulse.enabled")
+            inSlots("toggles-cleanse", slot, listOf(31)) -> toggleAndReopen(player, "gameplay.support.cleanse.enabled", "Cleanse", holder, "gameplay.cleanse.enabled")
+            inSlots("toggles-shared-heal", slot, listOf(32)) -> toggleAndReopen(player, "gameplay.support.shared-heal.enabled", "Shared heal", holder, "gameplay.shared-heal.enabled")
         }
     }
 
     private fun handleNumericPage(player: Player, slot: Int, click: ClickType, holder: AdminMenuHolder) {
         val multiplier = if (click.isShiftClick) 5.0 else 1.0
         when {
-            inSlots("numeric-xp-amount", slot, listOf(10)) -> adjustNumber(player, "gameplay.support.experience-pulse.amount", if (click.isLeftClick) -1 else 1, holder, "gameplay.experience-pulse.amount")
-            inSlots("numeric-xp-cooldown", slot, listOf(11)) -> adjustNumber(player, "gameplay.support.experience-pulse.cooldown-ticks", if (click.isLeftClick) -(20 * multiplier).toInt() else (20 * multiplier).toInt(), holder, "gameplay.experience-pulse.cooldown-ticks")
-            inSlots("numeric-cleanse-cooldown", slot, listOf(12)) -> adjustNumber(player, "gameplay.support.cleanse.cooldown-ticks", if (click.isLeftClick) -(20 * multiplier).toInt() else (20 * multiplier).toInt(), holder, "gameplay.cleanse.cooldown-ticks")
-            inSlots("numeric-shared-heal", slot, listOf(13)) -> adjustDouble(player, "gameplay.support.shared-heal.amount", if (click.isLeftClick) -0.5 * multiplier else 0.5 * multiplier, holder, "gameplay.shared-heal.amount")
-            inSlots("numeric-heal-cooldown", slot, listOf(14)) -> adjustNumber(player, "gameplay.support.shared-heal.cooldown-ticks", if (click.isLeftClick) -(20 * multiplier).toInt() else (20 * multiplier).toInt(), holder, "gameplay.shared-heal.cooldown-ticks")
-            inSlots("numeric-required-players", slot, listOf(15)) -> adjustNumber(player, "activation.requirements.required-players", if (click.isLeftClick) -1 else 1, holder, "campfire.required-players")
-            inSlots("numeric-bonus-threshold", slot, listOf(16)) -> adjustNumber(player, "activation.requirements.bonus-threshold", if (click.isLeftClick) -1 else 1, holder, "campfire.bonus-threshold")
-            inSlots("numeric-rest-cycles", slot, listOf(19)) -> adjustNumber(player, "activation.rest.rest-cycles-required", if (click.isLeftClick) -1 else 1, holder, "campfire.rest-cycles-required")
-            inSlots("numeric-rest-cooldown", slot, listOf(20)) -> adjustNumber(player, "activation.rest.rest-reward-cooldown-ticks", if (click.isLeftClick) -(100 * multiplier).toInt() else (100 * multiplier).toInt(), holder, "campfire.rest-reward-cooldown-ticks")
-            inSlots("numeric-ward-radius", slot, listOf(21)) -> adjustDouble(player, "activation.requirements.monster-ward-radius", if (click.isLeftClick) -0.5 * multiplier else 0.5 * multiplier, holder, "campfire.monster-ward-radius")
+            inSlots("numeric-xp-amount", slot, listOf(20)) -> adjustNumber(player, "gameplay.support.experience-pulse.amount", if (click.isLeftClick) -1 else 1, holder, "gameplay.experience-pulse.amount")
+            inSlots("numeric-xp-cooldown", slot, listOf(21)) -> adjustNumber(player, "gameplay.support.experience-pulse.cooldown-ticks", if (click.isLeftClick) -(20 * multiplier).toInt() else (20 * multiplier).toInt(), holder, "gameplay.experience-pulse.cooldown-ticks")
+            inSlots("numeric-cleanse-cooldown", slot, listOf(22)) -> adjustNumber(player, "gameplay.support.cleanse.cooldown-ticks", if (click.isLeftClick) -(20 * multiplier).toInt() else (20 * multiplier).toInt(), holder, "gameplay.cleanse.cooldown-ticks")
+            inSlots("numeric-shared-heal", slot, listOf(23)) -> adjustDouble(player, "gameplay.support.shared-heal.amount", if (click.isLeftClick) -0.5 * multiplier else 0.5 * multiplier, holder, "gameplay.shared-heal.amount")
+            inSlots("numeric-heal-cooldown", slot, listOf(24)) -> adjustNumber(player, "gameplay.support.shared-heal.cooldown-ticks", if (click.isLeftClick) -(20 * multiplier).toInt() else (20 * multiplier).toInt(), holder, "gameplay.shared-heal.cooldown-ticks")
+            inSlots("numeric-required-players", slot, listOf(29)) -> adjustNumber(player, "activation.requirements.required-players", if (click.isLeftClick) -1 else 1, holder, "campfire.required-players")
+            inSlots("numeric-bonus-threshold", slot, listOf(30)) -> adjustNumber(player, "activation.requirements.bonus-threshold", if (click.isLeftClick) -1 else 1, holder, "campfire.bonus-threshold")
+            inSlots("numeric-rest-cycles", slot, listOf(31)) -> adjustNumber(player, "activation.rest.rest-cycles-required", if (click.isLeftClick) -1 else 1, holder, "campfire.rest-cycles-required")
+            inSlots("numeric-rest-cooldown", slot, listOf(32)) -> adjustNumber(player, "activation.rest.rest-reward-cooldown-ticks", if (click.isLeftClick) -(100 * multiplier).toInt() else (100 * multiplier).toInt(), holder, "campfire.rest-reward-cooldown-ticks")
+            inSlots("numeric-ward-radius", slot, listOf(33)) -> adjustDouble(player, "activation.requirements.monster-ward-radius", if (click.isLeftClick) -0.5 * multiplier else 0.5 * multiplier, holder, "campfire.monster-ward-radius")
         }
     }
 
@@ -101,7 +99,7 @@ class AdminMenuListener(
             return
         }
         val classes = plugin.settingsLoader.settings.classes.classes.keys.toList()
-        val classSlots = plugin.guiConfigService.slotsFor("class-entry", listOf(10, 11, 12, 13, 14))
+        val classSlots = plugin.guiConfigService.slotsFor("class-entry", listOf(20, 21, 22, 23, 24))
         val index = classSlots.indexOf(slot)
         if (index in classes.indices) {
             val classId = classes[index]
@@ -113,11 +111,11 @@ class AdminMenuListener(
     }
 
     private fun handleProfilePage(player: Player, slot: Int, click: ClickType, holder: AdminMenuHolder) {
-        val effectSlots = plugin.guiConfigService.slotsFor("profile-effect", listOf(19, 20, 21, 22, 23))
+        val effectSlots = plugin.guiConfigService.slotsFor("profile-effect", listOf(29, 30, 31, 32, 33))
         when {
-            inSlots("profile-feed-players", slot, listOf(11)) -> toggleAndReopen(player, "profiles.${holder.selectedProfileId}.feed-players", "Feed players", holder)
-            inSlots("profile-radius", slot, listOf(12)) -> adjustDouble(player, "profiles.${holder.selectedProfileId}.radius", if (click.isLeftClick) -0.5 else 0.5, holder)
-            inSlots("profile-next-profile", slot, listOf(14)) -> {
+            inSlots("profile-feed-players", slot, listOf(21)) -> toggleAndReopen(player, "profiles.${holder.selectedProfileId}.feed-players", "Feed players", holder)
+            inSlots("profile-radius", slot, listOf(22)) -> adjustDouble(player, "profiles.${holder.selectedProfileId}.radius", if (click.isLeftClick) -0.5 else 0.5, holder)
+            inSlots("profile-next-profile", slot, listOf(24)) -> {
                 val nextProfile = nextProfileId(holder.selectedProfileId)
                 openPage(player, holder.page, nextProfile)
             }

@@ -61,7 +61,7 @@ integrations:
   hooks:
     placeholderapi: true
     worldguard: false
-    clans: false
+    clans: true
 
   groups:
     # Base mode no depende de grupos externos.
@@ -69,7 +69,7 @@ integrations:
     require-same-group-for-activation: false
 
     # Si es false, el bonus heroico usa solo la cantidad de jugadores cercanos.
-    use-group-size-for-hero-bonus: false
+    use-group-size-for-hero-bonus: true
 
 restrictions:
   worlds:
@@ -165,13 +165,13 @@ classes:
           duration-ticks: 60
 
 clan-features:
-  # Sistema avanzado. Desactivado por defecto para mantener
-  # la vision base del plugin enfocada en campfires cooperativos.
-  enabled: false
+  # Feature extra opcional. Si no hay plugin de clanes no bloquea
+  # el funcionamiento base del plugin.
+  enabled: true
   hero-bonus-require-same-clan: false
 
   leader-bonus:
-    enabled: false
+    enabled: true
     effects:
       resistance:
         type: RESISTANCE
@@ -179,7 +179,7 @@ clan-features:
         duration-ticks: 100
 
   size-bonus:
-    enabled: false
+    enabled: true
     minimum-members: 4
     effects:
       haste:
@@ -189,7 +189,7 @@ clan-features:
 
   territory:
     restrict-to-own-clan-territory: false
-    bonus-in-own-territory: false
+    bonus-in-own-territory: true
     effects:
       luck:
         type: LUCK

@@ -62,15 +62,15 @@ class SettingsLoader(
                 classes = classPerks,
             ),
             clanFeatures = ClanFeatureSettings(
-                enabled = config.getBoolean("clan-features.enabled", false),
+                enabled = config.getBoolean("clan-features.enabled", true),
                 heroBonusRequireSameClan = config.getBoolean("clan-features.hero-bonus-require-same-clan", false),
-                leaderBonusEnabled = config.getBoolean("clan-features.leader-bonus.enabled", false),
+                leaderBonusEnabled = config.getBoolean("clan-features.leader-bonus.enabled", true),
                 leaderBonusEffects = loadEffects(config.getConfigurationSection("clan-features.leader-bonus.effects")),
-                sizeBonusEnabled = config.getBoolean("clan-features.size-bonus.enabled", false),
+                sizeBonusEnabled = config.getBoolean("clan-features.size-bonus.enabled", true),
                 sizeBonusMinimumMembers = config.getInt("clan-features.size-bonus.minimum-members", 4).coerceAtLeast(2),
                 sizeBonusEffects = loadEffects(config.getConfigurationSection("clan-features.size-bonus.effects")),
                 territoryRestrictToOwnClan = config.getBoolean("clan-features.territory.restrict-to-own-clan-territory", false),
-                territoryBonusEnabled = config.getBoolean("clan-features.territory.bonus-in-own-territory", false),
+                territoryBonusEnabled = config.getBoolean("clan-features.territory.bonus-in-own-territory", true),
                 territoryBonusEffects = loadEffects(config.getConfigurationSection("clan-features.territory.effects")),
             ),
             restrictions = RestrictionSettings(
@@ -82,9 +82,9 @@ class SettingsLoader(
             integrations = IntegrationSettings(
                 enablePlaceholderApi = bool(config, "integrations.hooks.placeholderapi", "integrations.placeholderapi", true),
                 enableWorldGuard = bool(config, "integrations.hooks.worldguard", "integrations.worldguard", false),
-                enableClanHooks = bool(config, "integrations.hooks.clans", "integrations.clans", false),
+                enableClanHooks = bool(config, "integrations.hooks.clans", "integrations.clans", true),
                 requireSameGroupForActivation = bool(config, "integrations.groups.require-same-group-for-activation", "integrations.require-same-group-for-activation", false),
-                useGroupSizeForHeroBonus = bool(config, "integrations.groups.use-group-size-for-hero-bonus", "integrations.use-group-size-for-hero-bonus", false),
+                useGroupSizeForHeroBonus = bool(config, "integrations.groups.use-group-size-for-hero-bonus", "integrations.use-group-size-for-hero-bonus", true),
             ),
             gui = GuiSettings(
                 title = colorize(config.getString("gui.title") ?: "&8CampfireRPG Control"),
