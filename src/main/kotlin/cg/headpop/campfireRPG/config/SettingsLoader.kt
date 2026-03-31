@@ -11,7 +11,7 @@ class SettingsLoader(
         private set
 
     fun reload() {
-        val config = plugin.config
+        val config = plugin.runtimeConfigService.merged()
         val profilesSection = requireNotNull(config.getConfigurationSection("profiles")) {
             "profiles section is required in config.yml"
         }

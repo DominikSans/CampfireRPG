@@ -1,6 +1,7 @@
 package cg.headpop.campfireRPG
 
 import cg.headpop.campfireRPG.command.CampfireRpgCommand
+import cg.headpop.campfireRPG.config.RuntimeConfigService
 import cg.headpop.campfireRPG.config.SettingsLoader
 import cg.headpop.campfireRPG.gui.AdminMenuService
 import cg.headpop.campfireRPG.gui.GuiConfigService
@@ -44,12 +45,16 @@ class CampfireRPG : JavaPlugin() {
     lateinit var languageService: LanguageService
         private set
 
+    lateinit var runtimeConfigService: RuntimeConfigService
+        private set
+
     private var placeholderExpansion: CampfirePlaceholderExpansion? = null
 
     override fun onEnable() {
         saveDefaultConfig()
 
         settingsLoader = SettingsLoader(this)
+        runtimeConfigService = RuntimeConfigService(this)
         campfireRegistry = CampfireRegistry(this)
         integrationService = IntegrationService(this)
         diagnosticsService = DiagnosticsService(this)
@@ -77,6 +82,7 @@ class CampfireRPG : JavaPlugin() {
 
     fun reloadPlugin(fullRescan: Boolean = false, showBanner: Boolean = false) {
         reloadConfig()
+        runtimeConfigService.reload()
         settingsLoader.reload()
         languageService.reload()
         guiConfigService.reload()
@@ -95,16 +101,16 @@ class CampfireRPG : JavaPlugin() {
 
     fun toggleConfigBoolean(path: String, fallbackPath: String? = null): Boolean {
         val actualPath = resolveConfigPath(path, fallbackPath)
-        val nextValue = !config.getBoolean(actualPath, false)
+        val nextValue = !runtimeConfigService.getBoolean(actualPath, false)
         writeConfigValue(path, fallbackPath, nextValue)
-        saveConfig()
+        runtimeConfigService.save()
         reloadPlugin()
         return nextValue
     }
 
     fun updateConfigNumber(path: String, delta: Number, fallbackPath: String? = null): Number {
         val actualPath = resolveConfigPath(path, fallbackPath)
-        val current = config.get(actualPath)
+        val current = runtimeConfigService.get(actualPath)
         val next = when (current) {
             is Int -> (current + delta.toInt()).coerceAtLeast(0)
             is Long -> (current + delta.toLong()).coerceAtLeast(0L)
@@ -112,28 +118,28 @@ class CampfireRPG : JavaPlugin() {
             else -> delta
         }
         writeConfigValue(path, fallbackPath, next)
-        saveConfig()
+        runtimeConfigService.save()
         reloadPlugin()
         return next
     }
 
     fun setConfigValue(path: String, value: Any, fallbackPath: String? = null) {
         writeConfigValue(path, fallbackPath, value)
-        saveConfig()
+        runtimeConfigService.save()
         reloadPlugin()
     }
 
     private fun writeConfigValue(path: String, fallbackPath: String?, value: Any) {
-        config.set(path, value)
+        runtimeConfigService.set(path, value)
         if (!fallbackPath.isNullOrBlank() && fallbackPath != path) {
-            config.set(fallbackPath, value)
+            runtimeConfigService.set(fallbackPath, value)
         }
     }
 
     private fun resolveConfigPath(path: String, fallbackPath: String?): String {
         return when {
-            config.contains(path) -> path
-            !fallbackPath.isNullOrBlank() && config.contains(fallbackPath) -> fallbackPath
+            runtimeConfigService.contains(path) || runtimeConfigService.merged().contains(path) -> path
+            !fallbackPath.isNullOrBlank() && (runtimeConfigService.contains(fallbackPath) || runtimeConfigService.merged().contains(fallbackPath)) -> fallbackPath
             else -> path
         }
     }

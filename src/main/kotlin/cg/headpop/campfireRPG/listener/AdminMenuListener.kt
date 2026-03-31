@@ -123,7 +123,7 @@ class AdminMenuListener(
             }
             in effectSlots -> {
                 val effectIndex = effectSlots.indexOf(slot)
-                val keys = plugin.config.getConfigurationSection("profiles.${holder.selectedProfileId}.effects")?.getKeys(false)?.toList().orEmpty()
+                val keys = plugin.runtimeConfigService.merged().getConfigurationSection("profiles.${holder.selectedProfileId}.effects")?.getKeys(false)?.toList().orEmpty()
                 if (effectIndex >= keys.size) {
                     return
                 }

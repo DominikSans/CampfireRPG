@@ -168,7 +168,7 @@ class AdminMenuService(
 
     private fun renderProfileEditorPage(inventory: Inventory, selectedProfileId: String) {
         val profile = plugin.settingsLoader.settings.profiles[selectedProfileId] ?: plugin.settingsLoader.settings.profiles.values.first()
-        val section = plugin.config.getConfigurationSection("profiles.${profile.id}.effects")
+        val section = plugin.runtimeConfigService.merged().getConfigurationSection("profiles.${profile.id}.effects")
         val effectKeys = section?.getKeys(false)?.toList().orEmpty()
         val effectSlots = plugin.guiConfigService.slots("pages.profile.effect-slots", listOf(19, 20, 21, 22, 23))
 
@@ -188,7 +188,7 @@ class AdminMenuService(
 
         effectKeys.take(effectSlots.size).forEachIndexed { index, effectKey ->
             val effectPath = "profiles.${profile.id}.effects.$effectKey"
-            val effectSection = plugin.config.getConfigurationSection(effectPath) ?: return@forEachIndexed
+            val effectSection = plugin.runtimeConfigService.merged().getConfigurationSection(effectPath) ?: return@forEachIndexed
             inventory.setItem(effectSlots[index], createItem(Material.POTION, "§dEffect: $effectKey", listOf(
                 "§7Type: §f${effectSection.getString("type")}",
                 "§7Amplifier: §f${effectSection.getInt("amplifier")}",

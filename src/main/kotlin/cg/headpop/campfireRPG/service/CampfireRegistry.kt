@@ -5,6 +5,7 @@ import cg.headpop.campfireRPG.model.ActiveCampfire
 import org.bukkit.Chunk
 import org.bukkit.Material
 import org.bukkit.World
+import org.bukkit.block.Block
 import org.bukkit.block.data.type.Campfire
 import java.util.concurrent.ConcurrentHashMap
 
@@ -32,23 +33,7 @@ class CampfireRegistry(
         for (y in chunk.world.minHeight until chunk.world.maxHeight) {
             for (x in 0..15) {
                 for (z in 0..15) {
-                    val block = chunk.getBlock(x, y, z)
-                    if (block.type != Material.CAMPFIRE && block.type != Material.SOUL_CAMPFIRE) {
-                        continue
-                    }
-
-                    val data = block.blockData as? Campfire ?: continue
-                    if (!data.isLit) {
-                        continue
-                    }
-
-                    found += ActiveCampfire(
-                        worldName = chunk.world.name,
-                        x = block.x,
-                        y = block.y,
-                        z = block.z,
-                        material = block.type,
-                    )
+                    createActiveCampfire(chunk.getBlock(x, y, z))?.let(found::add)
                 }
             }
         }
@@ -64,6 +49,30 @@ class CampfireRegistry(
         campfiresByChunk.remove(chunkKey(chunk.world, chunk.x, chunk.z))
     }
 
+    fun refreshBlock(block: Block) {
+        val key = chunkKey(block.world, block.chunk.x, block.chunk.z)
+        val current = campfiresByChunk[key]?.toMutableSet() ?: linkedSetOf()
+        current.removeIf { it.worldName == block.world.name && it.x == block.x && it.y == block.y && it.z == block.z }
+        createActiveCampfire(block)?.let(current::add)
+
+        if (current.isEmpty()) {
+            campfiresByChunk.remove(key)
+        } else {
+            campfiresByChunk[key] = current
+        }
+    }
+
+    fun removeBlock(block: Block) {
+        val key = chunkKey(block.world, block.chunk.x, block.chunk.z)
+        val current = campfiresByChunk[key]?.toMutableSet() ?: return
+        current.removeIf { it.worldName == block.world.name && it.x == block.x && it.y == block.y && it.z == block.z }
+        if (current.isEmpty()) {
+            campfiresByChunk.remove(key)
+        } else {
+            campfiresByChunk[key] = current
+        }
+    }
+
     fun activeCampfires(): List<ActiveCampfire> = campfiresByChunk.values.flatten()
 
     fun clear() {
@@ -73,4 +82,23 @@ class CampfireRegistry(
     fun size(): Int = campfiresByChunk.values.sumOf(Set<ActiveCampfire>::size)
 
     private fun chunkKey(world: World, x: Int, z: Int): String = "${world.name}:$x:$z"
+
+    private fun createActiveCampfire(block: Block): ActiveCampfire? {
+        if (block.type != Material.CAMPFIRE && block.type != Material.SOUL_CAMPFIRE) {
+            return null
+        }
+
+        val data = block.blockData as? Campfire ?: return null
+        if (!data.isLit) {
+            return null
+        }
+
+        return ActiveCampfire(
+            worldName = block.world.name,
+            x = block.x,
+            y = block.y,
+            z = block.z,
+            material = block.type,
+        )
+    }
 }

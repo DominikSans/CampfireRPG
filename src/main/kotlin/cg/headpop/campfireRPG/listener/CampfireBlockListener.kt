@@ -1,6 +1,7 @@
 package cg.headpop.campfireRPG.listener
 
 import cg.headpop.campfireRPG.service.CampfireRegistry
+import org.bukkit.Material
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -29,32 +30,34 @@ class CampfireBlockListener(
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     fun onBlockPlace(event: BlockPlaceEvent) {
-        registry.refreshChunk(event.block.chunk)
+        registry.refreshBlock(event.block)
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     fun onBlockBreak(event: BlockBreakEvent) {
-        registry.refreshChunk(event.block.chunk)
+        registry.removeBlock(event.block)
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     fun onBlockIgnite(event: BlockIgniteEvent) {
-        registry.refreshChunk(event.block.chunk)
+        registry.refreshBlock(event.block)
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     fun onBlockFade(event: BlockFadeEvent) {
-        registry.refreshChunk(event.block.chunk)
+        registry.refreshBlock(event.block)
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     fun onBlockBurn(event: BlockBurnEvent) {
-        registry.refreshChunk(event.block.chunk)
+        registry.removeBlock(event.block)
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     fun onInteract(event: PlayerInteractEvent) {
         val clicked = event.clickedBlock ?: return
-        registry.refreshChunk(clicked.chunk)
+        if (clicked.type == Material.CAMPFIRE || clicked.type == Material.SOUL_CAMPFIRE) {
+            registry.refreshBlock(clicked)
+        }
     }
 }
