@@ -103,6 +103,10 @@ class CampfireRpgCommand(
         }
 
         if (args[0].equals("integrations", ignoreCase = true)) {
+            if (!sender.hasPermission("campfirerpg.admin")) {
+                sender.sendMessage(plugin.settingsLoader.settings.messages.noPermission)
+                return true
+            }
             sender.sendMessage(plugin.languageService.get("command.integrations.title"))
             plugin.integrationService.describeIntegrations().forEach { sender.sendMessage("§7- §f$it") }
             return true
@@ -138,7 +142,7 @@ class CampfireRpgCommand(
         val options = if (sender.hasPermission("campfirerpg.admin")) {
             mutableListOf("help", "status", "profiles", "integrations", "reload", "debug", "scan", "gui")
         } else {
-            mutableListOf("help", "status", "profiles", "integrations")
+            mutableListOf("help", "status", "profiles")
         }
         if (plugin.settingsLoader.settings.classes.enabled) {
             options += "class"
@@ -171,11 +175,11 @@ class CampfireRpgCommand(
         sender.sendMessage(plugin.languageService.get("command.help.title"))
         sender.sendMessage(plugin.languageService.get("command.help.status", "label" to label))
         sender.sendMessage(plugin.languageService.get("command.help.profiles", "label" to label))
-        sender.sendMessage(plugin.languageService.get("command.help.integrations", "label" to label))
         if (plugin.settingsLoader.settings.classes.enabled) {
             sender.sendMessage("§7/$label class [list|id] §8- §fselect your campfire class")
         }
         if (sender.hasPermission("campfirerpg.admin")) {
+            sender.sendMessage(plugin.languageService.get("command.help.integrations", "label" to label))
             sender.sendMessage(plugin.languageService.get("command.help.gui", "label" to label))
             sender.sendMessage(plugin.languageService.get("command.help.reload", "label" to label))
             sender.sendMessage(plugin.languageService.get("command.help.debug", "label" to label))

@@ -236,12 +236,12 @@ items:
 
   classes-disabled:
     material: BARRIER
-    name: "&cInternal Classes Disabled"
+    name: "&cAdvanced systems disabled"
     slot: 10
 
   classes-clan-info:
-    material: NAME_TAG
-    name: "&bUltimateClans"
+    material: COMPASS
+    name: "&bAdvanced hooks"
     slot: 11
 
   class-entry:

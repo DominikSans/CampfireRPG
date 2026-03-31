@@ -60,15 +60,16 @@ gameplay:
 integrations:
   hooks:
     placeholderapi: true
-    worldguard: true
-    clans: true
+    worldguard: false
+    clans: false
 
   groups:
-    # Si es true, solo un mismo grupo/clan/party puede activar la fogata.
+    # Base mode no depende de grupos externos.
+    # Activalo solo si quieres condicionar la fogata a clanes/parties/factions.
     require-same-group-for-activation: false
 
-    # Si es true, el bonus heroico toma el tamano del grupo elegible.
-    use-group-size-for-hero-bonus: true
+    # Si es false, el bonus heroico usa solo la cantidad de jugadores cercanos.
+    use-group-size-for-hero-bonus: false
 
 restrictions:
   worlds:
@@ -164,11 +165,13 @@ classes:
           duration-ticks: 60
 
 clan-features:
-  enabled: true
+  # Sistema avanzado. Desactivado por defecto para mantener
+  # la vision base del plugin enfocada en campfires cooperativos.
+  enabled: false
   hero-bonus-require-same-clan: false
 
   leader-bonus:
-    enabled: true
+    enabled: false
     effects:
       resistance:
         type: RESISTANCE
@@ -176,7 +179,7 @@ clan-features:
         duration-ticks: 100
 
   size-bonus:
-    enabled: true
+    enabled: false
     minimum-members: 4
     effects:
       haste:
@@ -186,7 +189,7 @@ clan-features:
 
   territory:
     restrict-to-own-clan-territory: false
-    bonus-in-own-territory: true
+    bonus-in-own-territory: false
     effects:
       luck:
         type: LUCK
@@ -199,12 +202,12 @@ debug:
 
 messages:
   actionbar:
-    normal: "&6Campfire Aura &7- descanso del aventurero"
-    soul: "&bSoul Campfire &7- poder ancestral"
+    normal: "&6Campfire Rest &7- warm support aura"
+    soul: "&bSoul Campfire &7- stronger support aura"
 
   chat:
-    rested: "&6El campfire te concede un descanso reparador."
-    hero: "&dLa fogata responde al grupo y despierta un bonus heroico."
+    rested: "&6The campfire leaves you well rested."
+    hero: "&dYour group awakened the campfire bonus."
 
   system:
     no-permission: "&cNo tienes permiso."
@@ -230,14 +233,10 @@ profiles:
         type: RESISTANCE
         amplifier: 0
         duration-ticks: 100
-      speed:
-        type: SPEED
-        amplifier: 0
-        duration-ticks: 100
 
     bonus-effects:
-      haste:
-        type: HASTE
+      speed:
+        type: SPEED
         amplifier: 0
         duration-ticks: 100
 
@@ -246,18 +245,10 @@ profiles:
         type: ABSORPTION
         amplifier: 0
         duration-ticks: 1800
-      luck:
-        type: LUCK
-        amplifier: 0
-        duration-ticks: 1800
 
     ward-effects:
       weakness:
         type: WEAKNESS
-        amplifier: 0
-        duration-ticks: 80
-      slowness:
-        type: SLOWNESS
         amplifier: 0
         duration-ticks: 80
 
@@ -275,36 +266,24 @@ profiles:
         type: RESISTANCE
         amplifier: 0
         duration-ticks: 100
-      speed:
-        type: SPEED
-        amplifier: 1
-        duration-ticks: 100
       night_vision:
         type: NIGHT_VISION
         amplifier: 0
         duration-ticks: 160
-      strength:
-        type: STRENGTH
+      speed:
+        type: SPEED
         amplifier: 0
         duration-ticks: 100
 
     bonus-effects:
       hero_resistance:
         type: RESISTANCE
-        amplifier: 1
-        duration-ticks: 100
-      haste:
-        type: HASTE
-        amplifier: 1
+        amplifier: 0
         duration-ticks: 100
 
     rested-effects:
       absorption:
         type: ABSORPTION
-        amplifier: 1
-        duration-ticks: 2400
-      luck:
-        type: LUCK
         amplifier: 0
         duration-ticks: 2400
       fire_resistance:
@@ -315,9 +294,9 @@ profiles:
     ward-effects:
       weakness:
         type: WEAKNESS
-        amplifier: 1
+        amplifier: 0
         duration-ticks: 100
       slowness:
         type: SLOWNESS
-        amplifier: 1
+        amplifier: 0
         duration-ticks: 100

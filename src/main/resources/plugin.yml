@@ -3,7 +3,7 @@ version: '$version'
 main: cg.headpop.campfireRPG.CampfireRPG
 api-version: '1.21.10'
 load: POSTWORLD
-description: Premium-grade scalable RPG campfire system for Paper servers.
+description: Cooperative campfire rest and support system for Paper servers.
 authors: [headpop]
 commands:
   campfirerpg:
@@ -27,9 +27,6 @@ permissions:
     default: true
   campfirerpg.admin:
     description: Allows reloading the plugin.
-    default: op
-  campfirerpg.bypass-night:
-    description: Reserved permission for future premium integrations.
     default: op
   campfirerpg.class.adventurer:
     description: Adventurer campfire perks.

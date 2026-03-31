@@ -113,21 +113,27 @@ class AdminMenuService(
     private fun renderClassesPage(inventory: Inventory, player: Player) {
         val settings = plugin.settingsLoader.settings
         if (!settings.classes.enabled) {
-            placeConfiguredItem(inventory, fallback("classes-disabled", Material.BARRIER, "§cInternal Classes Disabled", listOf(
-                "§7This server relies on external class systems.",
-                "§7CampfireRPG class perks are disabled by default.",
+            placeConfiguredItem(inventory, fallback("classes-disabled", Material.BARRIER, "§cAdvanced systems disabled", listOf(
+                "§7Internal classes: §f${settings.classes.enabled}",
+                "§7Clan features: §f${settings.clanFeatures.enabled}",
+                "§7Group hooks: §f${settings.integrations.enableClanHooks}",
+                "§7Base mode focuses on campfire support only.",
             ), listOf(10)))
-            placeConfiguredItem(inventory, fallback("classes-clan-info", Material.NAME_TAG, "§bUltimateClans", listOf(
-                "§7Tag: §f${plugin.auraService.getClanTag(player)}",
-                "§7Role: §f${plugin.auraService.getClanRole(player)}",
-                "§7Size: §f${plugin.auraService.getClanSize(player)}",
-                "§7Own territory: §f${plugin.auraService.isInOwnClanTerritory(player)}",
+            placeConfiguredItem(inventory, fallback("classes-clan-info", Material.COMPASS, "§bAdvanced hooks", listOf(
+                "§7Detected: §f${plugin.integrationService.detectedGroupPluginNames().ifEmpty { listOf("none") }.joinToString()}",
+                "§7WorldGuard: §f${plugin.integrationService.isWorldGuardEnabled()}",
+                "§7PlaceholderAPI: §f${settings.integrations.enablePlaceholderApi}",
+                "§7Use this page only when enabling advanced features.",
             ), listOf(11)))
             placeConfiguredItem(inventory, fallback("classes-placeholders", Material.PAPER, "§bPlaceholders", listOf(
+                "§7%campfirerpg_tracked_campfires%",
+                "§7%campfirerpg_profile%",
+                "§7%campfirerpg_active%",
+                "§7%campfirerpg_aura_remaining%",
                 "§7%campfirerpg_uclans_tag%",
                 "§7%campfirerpg_uclans_role%",
                 "§7%campfirerpg_uclans_size%",
-                "§7%campfirerpg_uclans_own_territory%",
+                "§7Advanced placeholders require hooks.",
             ), listOf(20)))
             return
         }
