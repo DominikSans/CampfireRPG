@@ -1,0 +1,6 @@
+name: CampfireRPG
+version: '$version'
+
+main: cg.headpop.campfireRPG.CampfireRPG
+api-version: '1.21.10'
+load: POSTWORLD
