@@ -18,13 +18,12 @@ class CampfireRpgCommand(
         args: Array<out String>,
     ): Boolean {
         if (args.isEmpty() || args[0].equals("status", ignoreCase = true)) {
-            val settings = plugin.settingsLoader.settings
-            val diagnostics = plugin.diagnosticsService.snapshot()
-            sender.sendMessage("§6CampfireRPG §7| §ftracked campfires: §e${plugin.campfireRegistry.size()}")
-            sender.sendMessage("§7Tick interval: §f${settings.scan.intervalTicks} §7| Min players: §f${settings.campfire.requiredPlayers}")
-            sender.sendMessage("§7Night only: §f${settings.night.onlyAtNight} §7| Profiles: §f${settings.profiles.keys.joinToString()}")
-            sender.sendMessage("§7Avg tick: §f${"%.2f".format(diagnostics.averageTickMs)}ms §7| Max tick: §f${"%.2f".format(diagnostics.maxTickMs)}ms")
-            sender.sendMessage("§7Integrations: §f${plugin.integrationService.describeIntegrations().joinToString(" | ")}")
+            sendStatus(sender)
+            return true
+        }
+
+        if (args[0].equals("help", ignoreCase = true)) {
+            sendHelp(sender, label)
             return true
         }
 
@@ -50,6 +49,34 @@ class CampfireRpgCommand(
             return true
         }
 
+        if (args[0].equals("scan", ignoreCase = true)) {
+            if (!sender.hasPermission("campfirerpg.admin")) {
+                sender.sendMessage(plugin.settingsLoader.settings.messages.noPermission)
+                return true
+            }
+
+            plugin.campfireRegistry.fullRescanLoadedChunks()
+            sender.sendMessage("§aCampfires cargados reescaneados. Total actual: §f${plugin.campfireRegistry.size()}")
+            return true
+        }
+
+        if (args[0].equals("profiles", ignoreCase = true)) {
+            val settings = plugin.settingsLoader.settings
+            sender.sendMessage("§6CampfireRPG Profiles")
+            settings.profiles.values.forEach { profile ->
+                sender.sendMessage(
+                    "§7- §f${profile.id} §8| §7material: §f${profile.material} §8| §7radius: §f${profile.radius} §8| §7effects: §f${profile.effects.size}"
+                )
+            }
+            return true
+        }
+
+        if (args[0].equals("integrations", ignoreCase = true)) {
+            sender.sendMessage("§6CampfireRPG Integrations")
+            plugin.integrationService.describeIntegrations().forEach { sender.sendMessage("§7- §f$it") }
+            return true
+        }
+
         if (args[0].equals("gui", ignoreCase = true)) {
             if (!sender.hasPermission("campfirerpg.admin")) {
                 sender.sendMessage(plugin.settingsLoader.settings.messages.noPermission)
@@ -67,7 +94,7 @@ class CampfireRpgCommand(
             return true
         }
 
-        sender.sendMessage("§eUso: /$label [status|reload|debug|gui]")
+        sendHelp(sender, label)
         return true
     }
 
@@ -82,11 +109,34 @@ class CampfireRpgCommand(
         }
 
         val options = if (sender.hasPermission("campfirerpg.admin")) {
-            listOf("status", "reload", "debug", "gui")
+            listOf("help", "status", "profiles", "integrations", "reload", "debug", "scan", "gui")
         } else {
-            listOf("status")
+            listOf("help", "status", "profiles", "integrations")
         }
 
         return options.filter { it.startsWith(args[0], ignoreCase = true) }.toMutableList()
+    }
+
+    private fun sendStatus(sender: CommandSender) {
+        val settings = plugin.settingsLoader.settings
+        val diagnostics = plugin.diagnosticsService.snapshot()
+        sender.sendMessage("§6CampfireRPG §7| §ftracked campfires: §e${plugin.campfireRegistry.size()}")
+        sender.sendMessage("§7Tick interval: §f${settings.scan.intervalTicks} §7| Min players: §f${settings.campfire.requiredPlayers}")
+        sender.sendMessage("§7Night only: §f${settings.night.onlyAtNight} §7| Profiles: §f${settings.profiles.keys.joinToString()}")
+        sender.sendMessage("§7Avg tick: §f${"%.2f".format(diagnostics.averageTickMs)}ms §7| Max tick: §f${"%.2f".format(diagnostics.maxTickMs)}ms")
+        sender.sendMessage("§7Integrations: §f${plugin.integrationService.describeIntegrations().joinToString(" | ")}")
+    }
+
+    private fun sendHelp(sender: CommandSender, label: String) {
+        sender.sendMessage("§6CampfireRPG Commands")
+        sender.sendMessage("§7/$label status §8- §festado general del plugin")
+        sender.sendMessage("§7/$label profiles §8- §fperfiles de campfire activos")
+        sender.sendMessage("§7/$label integrations §8- §fintegraciones detectadas")
+        if (sender.hasPermission("campfirerpg.admin")) {
+            sender.sendMessage("§7/$label gui §8- §fpanel administrativo")
+            sender.sendMessage("§7/$label reload §8- §frecarga la configuracion")
+            sender.sendMessage("§7/$label debug §8- §factiva o desactiva debug")
+            sender.sendMessage("§7/$label scan §8- §freescanea campfires cargados")
+        }
     }
 }

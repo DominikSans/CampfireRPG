@@ -24,16 +24,26 @@ class AdminMenuListener(
         }
 
         when (event.rawSlot) {
-            15 -> {
+            20 -> {
                 val enabled = plugin.diagnosticsService.toggleDebug()
                 player.sendMessage(if (enabled) plugin.settingsLoader.settings.messages.debugEnabled else plugin.settingsLoader.settings.messages.debugDisabled)
                 plugin.adminMenuService.open(player)
             }
-            16 -> {
+            21 -> {
                 plugin.reloadPlugin()
                 player.sendMessage("§aCampfireRPG recargado.")
                 plugin.adminMenuService.open(player)
             }
+            22 -> {
+                plugin.campfireRegistry.fullRescanLoadedChunks()
+                player.sendMessage("§aCampfires reescaneados. Total actual: §f${plugin.campfireRegistry.size()}")
+                plugin.adminMenuService.open(player)
+            }
+            23 -> {
+                player.closeInventory()
+                player.sendMessage("§6CampfireRPG §7commands: §f/crpg help")
+            }
+            24 -> player.closeInventory()
         }
     }
 }

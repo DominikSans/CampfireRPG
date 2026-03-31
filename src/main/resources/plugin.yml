@@ -8,7 +8,8 @@ authors: [headpop]
 commands:
   campfirerpg:
     description: Main command for CampfireRPG
-    usage: /campfirerpg [status|reload]
+    usage: /campfirerpg [help|status|profiles|integrations|reload|debug|scan|gui]
+    aliases: [crpg, campfire]
     permission: campfirerpg.use
 permissions:
   campfirerpg.use:
