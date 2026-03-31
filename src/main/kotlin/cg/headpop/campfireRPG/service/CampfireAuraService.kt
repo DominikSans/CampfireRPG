@@ -1,6 +1,7 @@
 package cg.headpop.campfireRPG.service
 
 import cg.headpop.campfireRPG.CampfireRPG
+import cg.headpop.campfireRPG.config.ClassPerk
 import cg.headpop.campfireRPG.config.CampfireProfile
 import cg.headpop.campfireRPG.config.EffectSpec
 import cg.headpop.campfireRPG.model.ActiveCampfire
@@ -12,6 +13,7 @@ import org.bukkit.Registry
 import org.bukkit.Sound
 import org.bukkit.entity.Monster
 import org.bukkit.entity.Player
+import org.bukkit.attribute.Attribute
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.scheduler.BukkitTask
@@ -25,9 +27,16 @@ class CampfireAuraService(
     private val serializer = LegacyComponentSerializer.legacySection()
     private val restProgress = mutableMapOf<UUID, Int>()
     private val lastProfileByPlayer = mutableMapOf<UUID, String>()
+    private val lastClassByPlayer = mutableMapOf<UUID, String>()
     private val currentCampfireByPlayer = mutableMapOf<UUID, String>()
+    private val currentCampfireTypeByPlayer = mutableMapOf<UUID, String>()
+    private val heroBonusByPlayer = mutableMapOf<UUID, Boolean>()
+    private val auraRemainingByPlayer = mutableMapOf<UUID, Int>()
     private val restCampfireByPlayer = mutableMapOf<UUID, String>()
     private val lastRestRewardTick = mutableMapOf<UUID, Long>()
+    private val lastExperiencePulseTick = mutableMapOf<UUID, Long>()
+    private val lastCleanseTick = mutableMapOf<UUID, Long>()
+    private val lastSharedHealTick = mutableMapOf<UUID, Long>()
     private var auraTask: BukkitTask? = null
     private var rescanTask: BukkitTask? = null
 
@@ -56,9 +65,16 @@ class CampfireAuraService(
         rescanTask = null
         restProgress.clear()
         lastProfileByPlayer.clear()
+        lastClassByPlayer.clear()
         currentCampfireByPlayer.clear()
+        currentCampfireTypeByPlayer.clear()
+        heroBonusByPlayer.clear()
+        auraRemainingByPlayer.clear()
         restCampfireByPlayer.clear()
         lastRestRewardTick.clear()
+        lastExperiencePulseTick.clear()
+        lastCleanseTick.clear()
+        lastSharedHealTick.clear()
     }
 
     private fun tick() {
@@ -93,12 +109,20 @@ class CampfireAuraService(
             val heroCount = if (settings.integrations.useGroupSizeForHeroBonus) eligiblePlayers.size else nearbyPlayers.size
             val heroBonus = heroCount >= settings.campfire.bonusThreshold
             val campfireKey = campfire.key()
+            val soulCampfire = campfire.material == Material.SOUL_CAMPFIRE
 
             eligiblePlayers.forEach { player ->
                 applyProfile(player, profile, heroBonus)
+                val classPerk = resolveClassPerk(player)
+                applyClassPerks(player, classPerk, soulCampfire)
+                applyGameplayFeatures(player)
                 energizedPlayers += player.uniqueId
                 lastProfileByPlayer[player.uniqueId] = profile.id
+                lastClassByPlayer[player.uniqueId] = classPerk.id
                 currentCampfireByPlayer[player.uniqueId] = campfireKey
+                currentCampfireTypeByPlayer[player.uniqueId] = if (soulCampfire) "soul" else "normal"
+                heroBonusByPlayer[player.uniqueId] = heroBonus
+                auraRemainingByPlayer[player.uniqueId] = settings.scan.intervalTicks.toInt() + 40
                 buffedPlayers++
             }
 
@@ -134,8 +158,15 @@ class CampfireAuraService(
             if (player.uniqueId !in energizedPlayers) {
                 restProgress.remove(player.uniqueId)
                 lastProfileByPlayer.remove(player.uniqueId)
+                lastClassByPlayer.remove(player.uniqueId)
                 currentCampfireByPlayer.remove(player.uniqueId)
+                currentCampfireTypeByPlayer.remove(player.uniqueId)
+                heroBonusByPlayer.remove(player.uniqueId)
+                auraRemainingByPlayer.remove(player.uniqueId)
                 restCampfireByPlayer.remove(player.uniqueId)
+                lastExperiencePulseTick.remove(player.uniqueId)
+                lastCleanseTick.remove(player.uniqueId)
+                lastSharedHealTick.remove(player.uniqueId)
                 continue
             }
 
@@ -164,6 +195,81 @@ class CampfireAuraService(
             player.sendMessage(plugin.integrationService.applyPlaceholders(player, plugin.settingsLoader.settings.messages.restedMessage))
             lastRestRewardTick[player.uniqueId] = worldTick + plugin.settingsLoader.settings.campfire.restRewardCooldownTicks
         }
+    }
+
+    fun getCurrentProfileId(player: Player): String = lastProfileByPlayer[player.uniqueId] ?: "none"
+
+    fun getCurrentClassId(player: Player): String = lastClassByPlayer[player.uniqueId] ?: resolveClassPerk(player).id
+
+    fun getCurrentClassDisplayName(player: Player): String = resolveClassPerk(player).displayName
+
+    fun isPlayerInActiveCampfire(player: Player): Boolean = currentCampfireByPlayer.containsKey(player.uniqueId)
+
+    fun getCurrentCampfireType(player: Player): String = currentCampfireTypeByPlayer[player.uniqueId] ?: "none"
+
+    fun isHeroBonusActive(player: Player): Boolean = heroBonusByPlayer[player.uniqueId] == true
+
+    fun getAuraRemaining(player: Player): Int = auraRemainingByPlayer[player.uniqueId] ?: 0
+
+    private fun applyGameplayFeatures(player: Player) {
+        val gameplay = plugin.settingsLoader.settings.gameplay
+        val currentTick = player.world.fullTime
+
+        if (gameplay.enableExperiencePulse && gameplay.experiencePulseAmount > 0) {
+            val nextTick = lastExperiencePulseTick[player.uniqueId] ?: 0L
+            if (currentTick >= nextTick) {
+                player.giveExp(gameplay.experiencePulseAmount)
+                lastExperiencePulseTick[player.uniqueId] = currentTick + gameplay.experiencePulseCooldownTicks
+            }
+        }
+
+        if (gameplay.enableCleanse) {
+            val nextTick = lastCleanseTick[player.uniqueId] ?: 0L
+            if (currentTick >= nextTick) {
+                cleanseNegativeEffect(player)
+                lastCleanseTick[player.uniqueId] = currentTick + gameplay.cleanseCooldownTicks
+            }
+        }
+
+        if (gameplay.enableSharedHeal && gameplay.sharedHealAmount > 0.0) {
+            val nextTick = lastSharedHealTick[player.uniqueId] ?: 0L
+            if (currentTick >= nextTick) {
+                val maxHealth = player.getAttribute(Attribute.MAX_HEALTH)?.value ?: 20.0
+                if (player.health < maxHealth) {
+                    player.health = (player.health + gameplay.sharedHealAmount).coerceAtMost(maxHealth)
+                }
+                lastSharedHealTick[player.uniqueId] = currentTick + gameplay.sharedHealCooldownTicks
+            }
+        }
+    }
+
+    private fun applyClassPerks(player: Player, classPerk: ClassPerk, soulCampfire: Boolean) {
+        classPerk.globalEffects.forEach { applyEffect(player, it) }
+        val typeEffects = if (soulCampfire) classPerk.soulEffects else classPerk.normalEffects
+        typeEffects.forEach { applyEffect(player, it) }
+    }
+
+    private fun resolveClassPerk(player: Player): ClassPerk {
+        val classes = plugin.settingsLoader.settings.classes
+        return classes.classes.values.firstOrNull { player.hasPermission(it.permission) }
+            ?: classes.classes[classes.defaultClassId]
+            ?: classes.classes.values.first()
+    }
+
+    private fun cleanseNegativeEffect(player: Player) {
+        val negativeEffects = listOf(
+            PotionEffectType.POISON,
+            PotionEffectType.WITHER,
+            PotionEffectType.WEAKNESS,
+            PotionEffectType.SLOWNESS,
+            PotionEffectType.MINING_FATIGUE,
+            PotionEffectType.BLINDNESS,
+            PotionEffectType.HUNGER,
+            PotionEffectType.NAUSEA
+        )
+
+        val active = negativeEffects.firstOrNull { player.hasPotionEffect(it) } ?: return
+        player.removePotionEffect(active)
     }
 
     private fun selectEligiblePlayers(players: List<Player>): List<Player> {

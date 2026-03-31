@@ -4,6 +4,8 @@ data class PluginSettings(
     val scan: ScanSettings,
     val night: NightSettings,
     val campfire: CampfireSettings,
+    val gameplay: GameplaySettings,
+    val classes: ClassSettings,
     val restrictions: RestrictionSettings,
     val integrations: IntegrationSettings,
     val gui: GuiSettings,
@@ -29,6 +31,32 @@ data class CampfireSettings(
     val restRewardCooldownTicks: Long,
     val monsterWardRadius: Double,
     val bonusThreshold: Int,
+)
+
+data class GameplaySettings(
+    val enableExperiencePulse: Boolean,
+    val experiencePulseAmount: Int,
+    val experiencePulseCooldownTicks: Long,
+    val enableCleanse: Boolean,
+    val cleanseCooldownTicks: Long,
+    val enableSharedHeal: Boolean,
+    val sharedHealAmount: Double,
+    val sharedHealCooldownTicks: Long,
+)
+
+data class ClassSettings(
+    val defaultClassId: String,
+    val classes: Map<String, ClassPerk>,
+)
+
+data class ClassPerk(
+    val id: String,
+    val displayName: String,
+    val permission: String,
+    val description: String,
+    val globalEffects: List<EffectSpec>,
+    val normalEffects: List<EffectSpec>,
+    val soulEffects: List<EffectSpec>,
 )
 
 data class RestrictionSettings(

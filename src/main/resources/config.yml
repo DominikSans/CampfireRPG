@@ -14,6 +14,95 @@ campfire:
   monster-ward-radius: 8.0
   bonus-threshold: 4
 
+gameplay:
+  experience-pulse:
+    enabled: true
+    amount: 3
+    cooldown-ticks: 200
+  cleanse:
+    enabled: true
+    cooldown-ticks: 200
+  shared-heal:
+    enabled: true
+    amount: 1.0
+    cooldown-ticks: 120
+
+classes:
+  default: adventurer
+  types:
+    adventurer:
+      display-name: "&6Adventurer"
+      permission: "campfirerpg.class.adventurer"
+      description: "&7Equilibrado y versatil."
+      global-effects: {}
+      normal-effects:
+        speed:
+          type: SPEED
+          amplifier: 0
+          duration-ticks: 100
+      soul-effects:
+        luck:
+          type: LUCK
+          amplifier: 0
+          duration-ticks: 120
+    warrior:
+      display-name: "&cWarrior"
+      permission: "campfirerpg.class.warrior"
+      description: "&7Defensa y fuerza para primera linea."
+      global-effects:
+        resistance:
+          type: RESISTANCE
+          amplifier: 0
+          duration-ticks: 100
+      normal-effects:
+        strength:
+          type: STRENGTH
+          amplifier: 0
+          duration-ticks: 100
+      soul-effects:
+        strength:
+          type: STRENGTH
+          amplifier: 1
+          duration-ticks: 100
+    mage:
+      display-name: "&bMage"
+      permission: "campfirerpg.class.mage"
+      description: "&7Vision, energia y bonus mistico."
+      global-effects:
+        night_vision:
+          type: NIGHT_VISION
+          amplifier: 0
+          duration-ticks: 160
+      normal-effects:
+        haste:
+          type: HASTE
+          amplifier: 0
+          duration-ticks: 100
+      soul-effects:
+        fire_resistance:
+          type: FIRE_RESISTANCE
+          amplifier: 0
+          duration-ticks: 140
+    ranger:
+      display-name: "&aRanger"
+      permission: "campfirerpg.class.ranger"
+      description: "&7Movilidad y precision."
+      global-effects:
+        jump_boost:
+          type: JUMP_BOOST
+          amplifier: 0
+          duration-ticks: 100
+      normal-effects:
+        speed:
+          type: SPEED
+          amplifier: 1
+          duration-ticks: 100
+      soul-effects:
+        invisibility:
+          type: INVISIBILITY
+          amplifier: 0
+          duration-ticks: 60
+
 restrictions:
   allowed-worlds: []
   blocked-worlds: []

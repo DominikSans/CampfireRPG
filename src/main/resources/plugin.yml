@@ -11,6 +11,16 @@ commands:
     usage: /campfirerpg [help|status|profiles|integrations|reload|debug|scan|gui]
     aliases: [crpg, campfire]
     permission: campfirerpg.use
+softdepend:
+  - PlaceholderAPI
+  - WorldGuard
+  - UltimateClans
+  - SimpleClans
+  - Parties
+  - Lands
+  - Towny
+  - Kingdoms
+  - Factions
 permissions:
   campfirerpg.use:
     description: Allows players to benefit from campfires and use basic command status.
@@ -21,3 +31,15 @@ permissions:
   campfirerpg.bypass-night:
     description: Reserved permission for future premium integrations.
     default: op
+  campfirerpg.class.adventurer:
+    description: Adventurer campfire perks.
+    default: true
+  campfirerpg.class.warrior:
+    description: Warrior campfire perks.
+    default: false
+  campfirerpg.class.mage:
+    description: Mage campfire perks.
+    default: false
+  campfirerpg.class.ranger:
+    description: Ranger campfire perks.
+    default: false

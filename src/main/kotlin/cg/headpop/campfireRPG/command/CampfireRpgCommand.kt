@@ -71,6 +71,33 @@ class CampfireRpgCommand(
             return true
         }
 
+        if (args[0].equals("class", ignoreCase = true)) {
+            val player = sender as? Player
+            if (player == null) {
+                sender.sendMessage(plugin.settingsLoader.settings.messages.playerOnly)
+                return true
+            }
+
+            if (args.size == 1 || args[1].equals("list", ignoreCase = true)) {
+                sender.sendMessage("§6CampfireRPG Classes")
+                plugin.settingsLoader.settings.classes.classes.values.forEach {
+                    sender.sendMessage("§7- §f${it.id} §8| ${it.displayName} §8| §7perm: §f${it.permission}")
+                }
+                sender.sendMessage("§7Selected: §f${plugin.playerClassService.getSelectedClassId(player)}")
+                sender.sendMessage("§7Effective: §f${plugin.playerClassService.getEffectiveClassId(player)}")
+                return true
+            }
+
+            val classId = args[1].lowercase()
+            if (!plugin.playerClassService.setSelectedClass(player, classId)) {
+                player.sendMessage("§cClase invalida. Usa /$label class list")
+                return true
+            }
+
+            player.sendMessage("§aClase seleccionada: §f$classId")
+            return true
+        }
+
         if (args[0].equals("integrations", ignoreCase = true)) {
             sender.sendMessage("§6CampfireRPG Integrations")
             plugin.integrationService.describeIntegrations().forEach { sender.sendMessage("§7- §f$it") }
@@ -109,12 +136,22 @@ class CampfireRpgCommand(
         }
 
         val options = if (sender.hasPermission("campfirerpg.admin")) {
-            listOf("help", "status", "profiles", "integrations", "reload", "debug", "scan", "gui")
+            listOf("help", "status", "profiles", "integrations", "class", "reload", "debug", "scan", "gui")
         } else {
-            listOf("help", "status", "profiles", "integrations")
+            listOf("help", "status", "profiles", "integrations", "class")
         }
 
-        return options.filter { it.startsWith(args[0], ignoreCase = true) }.toMutableList()
+        if (args.size == 1) {
+            return options.filter { it.startsWith(args[0], ignoreCase = true) }.toMutableList()
+        }
+
+        if (args.size == 2 && args[0].equals("class", ignoreCase = true) && sender is Player) {
+            val classOptions = mutableListOf("list")
+            classOptions += plugin.settingsLoader.settings.classes.classes.keys
+            return classOptions.filter { it.startsWith(args[1], ignoreCase = true) }.toMutableList()
+        }
+
+        return mutableListOf()
     }
 
     private fun sendStatus(sender: CommandSender) {
@@ -132,6 +169,7 @@ class CampfireRpgCommand(
         sender.sendMessage("§7/$label status §8- §festado general del plugin")
         sender.sendMessage("§7/$label profiles §8- §fperfiles de campfire activos")
         sender.sendMessage("§7/$label integrations §8- §fintegraciones detectadas")
+        sender.sendMessage("§7/$label class [list|id] §8- §fselecciona tu clase de campfire")
         if (sender.hasPermission("campfirerpg.admin")) {
             sender.sendMessage("§7/$label gui §8- §fpanel administrativo")
             sender.sendMessage("§7/$label reload §8- §frecarga la configuracion")

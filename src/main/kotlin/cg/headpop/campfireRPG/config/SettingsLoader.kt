@@ -19,6 +19,12 @@ class SettingsLoader(
         val profiles = profilesSection.getKeys(false).associateWith { key ->
             loadProfile(key, requireNotNull(profilesSection.getConfigurationSection(key)))
         }
+        val classesSection = requireNotNull(config.getConfigurationSection("classes.types")) {
+            "classes.types section is required in config.yml"
+        }
+        val classPerks = classesSection.getKeys(false).associateWith { key ->
+            loadClassPerk(key, requireNotNull(classesSection.getConfigurationSection(key)))
+        }
 
         settings = PluginSettings(
             scan = ScanSettings(
@@ -36,6 +42,20 @@ class SettingsLoader(
                 restRewardCooldownTicks = config.getLong("campfire.rest-reward-cooldown-ticks", 3600L).coerceAtLeast(0L),
                 monsterWardRadius = config.getDouble("campfire.monster-ward-radius", 8.0).coerceAtLeast(1.0),
                 bonusThreshold = config.getInt("campfire.bonus-threshold", 4).coerceAtLeast(2),
+            ),
+            gameplay = GameplaySettings(
+                enableExperiencePulse = config.getBoolean("gameplay.experience-pulse.enabled", true),
+                experiencePulseAmount = config.getInt("gameplay.experience-pulse.amount", 3).coerceAtLeast(0),
+                experiencePulseCooldownTicks = config.getLong("gameplay.experience-pulse.cooldown-ticks", 200L).coerceAtLeast(0L),
+                enableCleanse = config.getBoolean("gameplay.cleanse.enabled", true),
+                cleanseCooldownTicks = config.getLong("gameplay.cleanse.cooldown-ticks", 200L).coerceAtLeast(0L),
+                enableSharedHeal = config.getBoolean("gameplay.shared-heal.enabled", true),
+                sharedHealAmount = config.getDouble("gameplay.shared-heal.amount", 1.0).coerceAtLeast(0.0),
+                sharedHealCooldownTicks = config.getLong("gameplay.shared-heal.cooldown-ticks", 120L).coerceAtLeast(0L),
+            ),
+            classes = ClassSettings(
+                defaultClassId = config.getString("classes.default", "adventurer")!!.lowercase(),
+                classes = classPerks,
             ),
             restrictions = RestrictionSettings(
                 allowedWorlds = config.getStringList("restrictions.allowed-worlds").map(String::lowercase).toSet(),
@@ -82,6 +102,18 @@ class SettingsLoader(
             bonusEffects = loadEffects(section.getConfigurationSection("bonus-effects")),
             restedEffects = loadEffects(section.getConfigurationSection("rested-effects")),
             wardEffects = loadEffects(section.getConfigurationSection("ward-effects")),
+        )
+    }
+
+    private fun loadClassPerk(key: String, section: ConfigurationSection): ClassPerk {
+        return ClassPerk(
+            id = key,
+            displayName = colorize(section.getString("display-name") ?: key.replaceFirstChar(Char::uppercase)),
+            permission = section.getString("permission", "campfirerpg.class.$key")!!,
+            description = colorize(section.getString("description") ?: "Campfire class perk"),
+            globalEffects = loadEffects(section.getConfigurationSection("global-effects")),
+            normalEffects = loadEffects(section.getConfigurationSection("normal-effects")),
+            soulEffects = loadEffects(section.getConfigurationSection("soul-effects")),
         )
     }
 
