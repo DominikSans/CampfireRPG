@@ -50,17 +50,17 @@ class AdminMenuListener(
             }
             21 -> {
                 plugin.reloadPlugin()
-                player.sendMessage("§aCampfireRPG recargado.")
+                player.sendMessage(plugin.languageService.get("command.reload.done"))
                 openPage(player, holder.page, holder.selectedProfileId)
             }
             22 -> {
                 plugin.campfireRegistry.fullRescanLoadedChunks()
-                player.sendMessage("§aCampfires reescaneados. Total actual: §f${plugin.campfireRegistry.size()}")
+                player.sendMessage(plugin.languageService.get("gui.rescan.done", "count" to plugin.campfireRegistry.size().toString()))
                 openPage(player, holder.page, holder.selectedProfileId)
             }
             23 -> {
                 player.closeInventory()
-                player.sendMessage("§6CampfireRPG §7commands: §f/crpg help")
+                player.sendMessage(plugin.languageService.get("gui.commands_hint"))
             }
             24 -> player.closeInventory()
         }
@@ -106,7 +106,7 @@ class AdminMenuListener(
             if (index < classes.size) {
                 val classId = classes[index]
                 if (plugin.playerClassService.setSelectedClass(player, classId)) {
-                    player.sendMessage("§aClase seleccionada: §f$classId")
+                    player.sendMessage(plugin.languageService.get("command.class.selected", "class" to classId))
                     openPage(player, holder.page, holder.selectedProfileId)
                 }
             }
@@ -139,7 +139,11 @@ class AdminMenuListener(
 
     private fun toggleAndReopen(player: Player, path: String, label: String, holder: AdminMenuHolder) {
         val enabled = plugin.toggleConfigBoolean(path)
-        player.sendMessage("§e$label: ${if (enabled) "§aenabled" else "§cdisabled"}")
+        player.sendMessage(plugin.languageService.get(
+            "toggle.state",
+            "label" to label,
+            "state" to plugin.languageService.get(if (enabled) "toggle.enabled" else "toggle.disabled"),
+        ))
         openPage(player, holder.page, holder.selectedProfileId)
     }
 

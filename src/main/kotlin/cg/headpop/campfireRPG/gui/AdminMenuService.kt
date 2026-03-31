@@ -20,7 +20,7 @@ class AdminMenuService(
         val holder = AdminMenuHolder()
         holder.page = page.coerceIn(0, 4)
         holder.selectedProfileId = selectedProfileId
-        val inventory = Bukkit.createInventory(holder, 45, serializer.deserialize(plugin.settingsLoader.settings.gui.title))
+        val inventory = Bukkit.createInventory(holder, 45, serializer.deserialize(plugin.guiConfigService.title()))
         holder.backingInventory = inventory
 
         fillBorders(inventory)
@@ -75,10 +75,10 @@ class AdminMenuService(
             "§7%campfirerpg_aura_remaining%",
         )))
         inventory.setItem(20, createItem(Material.REDSTONE_TORCH, "§cDebug", listOf("§7Enabled: §f${plugin.diagnosticsService.isDebugEnabled()}", "§7Click to toggle debug logging")))
-        inventory.setItem(21, createItem(Material.EMERALD, "§aReload", listOf("§7Reload configuration and caches")))
-        inventory.setItem(22, createItem(Material.SPYGLASS, "§bRescan Campfires", listOf("§7Rescan loaded chunks")))
-        inventory.setItem(23, createItem(Material.BOOK, "§eCommand Help", listOf("§7/crpg help", "§7/crpg class list", "§7/crpg gui")))
-        inventory.setItem(24, createItem(Material.BARRIER, "§cClose", listOf("§7Close this panel")))
+        inventory.setItem(21, createConfiguredItem("reload", Material.EMERALD, "§aReload", listOf("§7Reload configuration and caches")))
+        inventory.setItem(22, createConfiguredItem("rescan", Material.SPYGLASS, "§bRescan Campfires", listOf("§7Rescan loaded chunks")))
+        inventory.setItem(23, createConfiguredItem("help", Material.BOOK, "§eCommand Help", listOf("§7/crpg help", "§7/crpg gui")))
+        inventory.setItem(24, createConfiguredItem("close", Material.BARRIER, "§cClose", listOf("§7Close this panel")))
     }
 
     private fun renderTogglePage(inventory: Inventory) {
@@ -198,26 +198,47 @@ class AdminMenuService(
     }
 
     private fun fillNavigation(inventory: Inventory, page: Int) {
-        inventory.setItem(2, createItem(Material.MAP, "§eOverview", listOf("§7Page 1")))
-        inventory.setItem(3, createItem(Material.LEVER, "§eToggles", listOf("§7Page 2")))
-        inventory.setItem(4, createItem(Material.REPEATER, "§eNumeric Tuning", listOf("§7Page 3")))
-        inventory.setItem(5, createItem(Material.ENCHANTED_BOOK, "§eClan & Placeholders", listOf("§7Page 4")))
-        inventory.setItem(6, createItem(Material.BREWING_STAND, "§eProfile Editor", listOf("§7Page 5")))
+        inventory.setItem(2, createConfiguredItem("nav-overview", Material.MAP, "§eOverview", listOf("§7Page 1")))
+        inventory.setItem(3, createConfiguredItem("nav-toggles", Material.LEVER, "§eToggles", listOf("§7Page 2")))
+        inventory.setItem(4, createConfiguredItem("nav-numeric", Material.REPEATER, "§eNumeric Tuning", listOf("§7Page 3")))
+        inventory.setItem(5, createConfiguredItem("nav-clan", Material.ENCHANTED_BOOK, "§eClan & Placeholders", listOf("§7Page 4")))
+        inventory.setItem(6, createConfiguredItem("nav-profile", Material.BREWING_STAND, "§eProfile Editor", listOf("§7Page 5")))
 
         if (page > 0) {
-            inventory.setItem(41, createItem(Material.ARROW, "§fPrevious Page", listOf("§7Go to page ${page}")))
+            inventory.setItem(41, createConfiguredItem("previous", Material.ARROW, "§fPrevious Page", listOf("§7Go to page ${page}")))
         }
         if (page < 4) {
-            inventory.setItem(43, createItem(Material.ARROW, "§fNext Page", listOf("§7Go to page ${page + 2}")))
+            inventory.setItem(43, createConfiguredItem("next", Material.ARROW, "§fNext Page", listOf("§7Go to page ${page + 2}")))
         }
     }
 
     private fun createItem(material: Material, name: String, lore: List<String>): ItemStack {
-        val item = ItemStack(material)
+        return createItem(
+            cg.headpop.campfireRPG.gui.GuiItemSpec(
+                material = material,
+                amount = 1,
+                name = name,
+                lore = lore,
+                customModelData = null,
+                glow = false,
+                itemFlags = emptySet(),
+                enchants = emptyMap(),
+                skullOwner = null,
+            )
+        )
+    }
+
+    private fun createConfiguredItem(key: String, fallbackMaterial: Material, fallbackName: String, fallbackLore: List<String>): ItemStack {
+        return createItem(plugin.guiConfigService.item(key, fallbackMaterial, fallbackName, fallbackLore))
+    }
+
+    private fun createItem(spec: cg.headpop.campfireRPG.gui.GuiItemSpec): ItemStack {
+        val item = ItemStack(spec.material, spec.amount)
         val meta = item.itemMeta
-        meta.displayName(serializer.deserialize(name))
-        meta.lore(lore.map(serializer::deserialize))
-        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES)
+        meta.displayName(serializer.deserialize(spec.name))
+        meta.lore(spec.lore.map(serializer::deserialize))
+        spec.customModelData?.let(meta::setCustomModelData)
+        plugin.guiConfigService.applyExtraMeta(meta, spec)
         item.itemMeta = meta
         return item
     }
@@ -233,10 +254,7 @@ class AdminMenuService(
     }
 
     private fun fillBorders(inventory: Inventory) {
-        val filler = ItemStack(Material.GRAY_STAINED_GLASS_PANE)
-        val meta: ItemMeta = filler.itemMeta
-        meta.displayName(serializer.deserialize("§8"))
-        filler.itemMeta = meta
+        val filler = createConfiguredItem("border", Material.GRAY_STAINED_GLASS_PANE, "§8", emptyList())
 
         val borderSlots = listOf(0, 1, 7, 8, 9, 17, 18, 26, 27, 35, 36, 37, 38, 39, 40, 42, 44)
         borderSlots.forEach { inventory.setItem(it, filler) }

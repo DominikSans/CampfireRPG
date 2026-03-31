@@ -1,0 +1,66 @@
+gui:
+  title: "lang:gui.title"
+
+items:
+  nav-overview:
+    material: MAP
+    name: "lang:gui.nav.overview.name"
+    lore:
+      - "lang:gui.nav.overview.lore"
+  nav-toggles:
+    material: LEVER
+    name: "lang:gui.nav.toggles.name"
+    lore:
+      - "lang:gui.nav.toggles.lore"
+  nav-numeric:
+    material: REPEATER
+    name: "lang:gui.nav.numeric.name"
+    lore:
+      - "lang:gui.nav.numeric.lore"
+  nav-clan:
+    material: ENCHANTED_BOOK
+    name: "lang:gui.nav.clan.name"
+    lore:
+      - "lang:gui.nav.clan.lore"
+  nav-profile:
+    material: BREWING_STAND
+    name: "lang:gui.nav.profile.name"
+    lore:
+      - "lang:gui.nav.profile.lore"
+  previous:
+    material: ARROW
+    name: "lang:gui.nav.previous.name"
+    lore:
+      - "lang:gui.nav.previous.lore"
+  next:
+    material: ARROW
+    name: "lang:gui.nav.next.name"
+    lore:
+      - "lang:gui.nav.next.lore"
+  reload:
+    material: EMERALD
+    name: "lang:gui.reload.name"
+    lore:
+      - "lang:gui.reload.lore"
+    glow: true
+    item-flags:
+      - HIDE_ENCHANTS
+  rescan:
+    material: SPYGLASS
+    name: "lang:gui.rescan.name"
+    lore:
+      - "lang:gui.rescan.lore"
+  help:
+    material: BOOK
+    name: "lang:gui.help.name"
+    lore:
+      - "lang:gui.help.lore1"
+      - "lang:gui.help.lore2"
+  close:
+    material: BARRIER
+    name: "lang:gui.close.name"
+    lore:
+      - "lang:gui.close.lore"
+  border:
+    material: GRAY_STAINED_GLASS_PANE
+    name: "&8"

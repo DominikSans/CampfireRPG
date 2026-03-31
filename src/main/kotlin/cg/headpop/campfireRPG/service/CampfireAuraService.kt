@@ -42,10 +42,21 @@ class CampfireAuraService(
     private val lastSharedHealTick = mutableMapOf<UUID, Long>()
     private var auraTask: BukkitTask? = null
     private var rescanTask: BukkitTask? = null
+    private var auraIntervalTicks: Long = -1L
+    private var rescanIntervalTicks: Long = -1L
 
     fun reload() {
-        stop()
         val settings = plugin.settingsLoader.settings
+        if (auraTask != null && auraIntervalTicks == settings.scan.intervalTicks &&
+            rescanTask != null && rescanIntervalTicks == settings.scan.rescanIntervalTicks
+        ) {
+            return
+        }
+
+        auraTask?.cancel()
+        rescanTask?.cancel()
+        auraTask = null
+        rescanTask = null
 
         auraTask = plugin.server.scheduler.runTaskTimer(
             plugin,
@@ -59,29 +70,35 @@ class CampfireAuraService(
             settings.scan.rescanIntervalTicks,
             settings.scan.rescanIntervalTicks,
         )
+        auraIntervalTicks = settings.scan.intervalTicks
+        rescanIntervalTicks = settings.scan.rescanIntervalTicks
     }
 
-    fun stop() {
+    fun stop(clearState: Boolean = true) {
         auraTask?.cancel()
         rescanTask?.cancel()
         auraTask = null
         rescanTask = null
-        restProgress.clear()
-        lastProfileByPlayer.clear()
-        lastClassByPlayer.clear()
-        currentCampfireByPlayer.clear()
-        currentCampfireTypeByPlayer.clear()
-        heroBonusByPlayer.clear()
-        auraRemainingByPlayer.clear()
-        clanTagByPlayer.clear()
-        clanRoleByPlayer.clear()
-        clanSizeByPlayer.clear()
-        ownTerritoryByPlayer.clear()
-        restCampfireByPlayer.clear()
-        lastRestRewardTick.clear()
-        lastExperiencePulseTick.clear()
-        lastCleanseTick.clear()
-        lastSharedHealTick.clear()
+        auraIntervalTicks = -1L
+        rescanIntervalTicks = -1L
+        if (clearState) {
+            restProgress.clear()
+            lastProfileByPlayer.clear()
+            lastClassByPlayer.clear()
+            currentCampfireByPlayer.clear()
+            currentCampfireTypeByPlayer.clear()
+            heroBonusByPlayer.clear()
+            auraRemainingByPlayer.clear()
+            clanTagByPlayer.clear()
+            clanRoleByPlayer.clear()
+            clanSizeByPlayer.clear()
+            ownTerritoryByPlayer.clear()
+            restCampfireByPlayer.clear()
+            lastRestRewardTick.clear()
+            lastExperiencePulseTick.clear()
+            lastCleanseTick.clear()
+            lastSharedHealTick.clear()
+        }
     }
 
     private fun tick() {

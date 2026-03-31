@@ -3,6 +3,7 @@ package cg.headpop.campfireRPG
 import cg.headpop.campfireRPG.command.CampfireRpgCommand
 import cg.headpop.campfireRPG.config.SettingsLoader
 import cg.headpop.campfireRPG.gui.AdminMenuService
+import cg.headpop.campfireRPG.gui.GuiConfigService
 import cg.headpop.campfireRPG.integration.IntegrationService
 import cg.headpop.campfireRPG.lang.LanguageService
 import cg.headpop.campfireRPG.listener.AdminMenuListener
@@ -34,6 +35,9 @@ class CampfireRPG : JavaPlugin() {
     lateinit var adminMenuService: AdminMenuService
         private set
 
+    lateinit var guiConfigService: GuiConfigService
+        private set
+
     lateinit var playerClassService: PlayerClassService
         private set
 
@@ -49,38 +53,43 @@ class CampfireRPG : JavaPlugin() {
         campfireRegistry = CampfireRegistry(this)
         integrationService = IntegrationService(this)
         diagnosticsService = DiagnosticsService(this)
+        guiConfigService = GuiConfigService(this)
         adminMenuService = AdminMenuService(this)
         playerClassService = PlayerClassService(this)
         languageService = LanguageService(this)
         auraService = CampfireAuraService(this, campfireRegistry)
 
-        reloadPlugin()
+        reloadPlugin(fullRescan = true, showBanner = true)
 
         server.pluginManager.registerEvents(CampfireBlockListener(campfireRegistry), this)
         server.pluginManager.registerEvents(AdminMenuListener(this), this)
         val command = CampfireRpgCommand(this)
         getCommand("campfirerpg")?.setExecutor(command)
         getCommand("campfirerpg")?.tabCompleter = command
-
-        logger.info("CampfireRPG enabled successfully.")
     }
 
     override fun onDisable() {
         auraService.stop()
         campfireRegistry.clear()
+        printShutdownBanner()
     }
 
-    fun reloadPlugin() {
+    fun reloadPlugin(fullRescan: Boolean = false, showBanner: Boolean = false) {
         reloadConfig()
         settingsLoader.reload()
         languageService.reload()
+        guiConfigService.reload()
         integrationService.reload()
         diagnosticsService.reload()
         playerClassService.reload()
-        campfireRegistry.reload()
+        if (fullRescan) {
+            campfireRegistry.reload()
+        }
         auraService.reload()
         registerPlaceholderExpansion()
-        printStartupBanner()
+        if (showBanner) {
+            printStartupBanner()
+        }
     }
 
     fun toggleConfigBoolean(path: String): Boolean {
@@ -126,15 +135,23 @@ class CampfireRPG : JavaPlugin() {
         val console = server.consoleSender
         val version = pluginMeta.version
         val author = pluginMeta.authors.joinToString(", ")
-        console.sendMessage("§6  _____                              __ _           ____  ____   ____ ")
-        console.sendMessage("§6 / ____|                            / _(_)         |  _ \\|  _ \\ / ____|")
-        console.sendMessage("§e| |     __ _ _ __ ___  _ __  _ __| |_ _ _ __ ___ | |_) | |_) | |  __ ")
-        console.sendMessage("§e| |    / _` | '_ ` _ \\| '_ \\| '__|  _| | '__/ _ \\|  _ <|  _ <| | |_ |")
-        console.sendMessage("§c| |___| (_| | | | | | | |_) | |  | | | | | |  __/| |_) | |_) | |__| |")
-        console.sendMessage("§c \\_____\\__,_|_| |_| |_| .__/|_|  |_| |_|_|  \\___||____/|____/ \\_____|")
-        console.sendMessage("§c                      | |                                               ")
-        console.sendMessage("§c                      |_|                                               ")
+        console.sendMessage("§6   _____                       __ _          _____  _____   _____ ")
+        console.sendMessage("§6  / ____|                     / _(_)        |  __ \\|  __ \\ / ____|")
+        console.sendMessage("§e | |     __ _ _ __ ___  _ __ | |_ _ _ __ ___| |__) | |__) | |  __ ")
+        console.sendMessage("§e | |    / _` | '_ ` _ \\| '_ \\|  _| | '__/ _ \\  _  /|  ___/| | |_ |")
+        console.sendMessage("§c | |___| (_| | | | | | | |_) | | | | | |  __/ | \\ \\| |    | |__| |")
+        console.sendMessage("§c  \\_____\\__,_|_| |_| |_| .__/|_| |_|_|  \\___|_|  \\_\\_|     \\_____|")
+        console.sendMessage("§c                       | |                                        ")
+        console.sendMessage("§c                       |_|                                        ")
         console.sendMessage("§7Version: §f$version")
         console.sendMessage("§7Author(s): §f$author")
+    }
+
+    private fun printShutdownBanner() {
+        val console = server.consoleSender
+        val version = pluginMeta.version
+        val author = pluginMeta.authors.joinToString(", ")
+        console.sendMessage("§8[§6CampfireRPG§8] §cPlugin disabled.")
+        console.sendMessage("§7Version: §f$version §8| §7Author(s): §f$author")
     }
 }
