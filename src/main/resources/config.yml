@@ -1,0 +1,145 @@
+scan:
+  interval-ticks: 40
+  registry-rescan-interval-ticks: 600
+
+night:
+  only-at-night: true
+  start-tick: 13000
+  end-tick: 23000
+
+campfire:
+  required-players: 2
+  rest-cycles-required: 6
+  rest-reward-cooldown-ticks: 3600
+  monster-ward-radius: 8.0
+  bonus-threshold: 4
+
+restrictions:
+  allowed-worlds: []
+  blocked-worlds: []
+  allowed-regions: []
+  blocked-regions: []
+
+integrations:
+  placeholderapi: true
+  worldguard: true
+  clans: true
+  require-same-group-for-activation: false
+  use-group-size-for-hero-bonus: true
+
+gui:
+  title: "&8CampfireRPG Control"
+
+debug:
+  enabled-by-default: false
+  log-interval-ticks: 1200
+
+messages:
+  normal-actionbar: "&6Campfire Aura &7- descanso del aventurero"
+  soul-actionbar: "&bSoul Campfire &7- poder ancestral"
+  rested: "&6El campfire te concede un descanso reparador."
+  hero: "&dLa fogata responde al grupo y despierta un bonus heroico."
+  no-permission: "&cNo tienes permiso."
+  player-only: "&cSolo un jugador puede usar esta opcion."
+  debug-enabled: "&aDebug activado."
+  debug-disabled: "&cDebug desactivado."
+  gui-opened: "&aPanel de administracion abierto."
+
+profiles:
+  normal:
+    material: CAMPFIRE
+    radius: 7.0
+    feed-players: true
+    effects:
+      regeneration:
+        type: REGENERATION
+        amplifier: 0
+        duration-ticks: 100
+      resistance:
+        type: RESISTANCE
+        amplifier: 0
+        duration-ticks: 100
+      speed:
+        type: SPEED
+        amplifier: 0
+        duration-ticks: 100
+    bonus-effects:
+      haste:
+        type: HASTE
+        amplifier: 0
+        duration-ticks: 100
+    rested-effects:
+      absorption:
+        type: ABSORPTION
+        amplifier: 0
+        duration-ticks: 1800
+      luck:
+        type: LUCK
+        amplifier: 0
+        duration-ticks: 1800
+    ward-effects:
+      weakness:
+        type: WEAKNESS
+        amplifier: 0
+        duration-ticks: 80
+      slowness:
+        type: SLOWNESS
+        amplifier: 0
+        duration-ticks: 80
+
+  soul:
+    material: SOUL_CAMPFIRE
+    radius: 8.5
+    feed-players: true
+    effects:
+      regeneration:
+        type: REGENERATION
+        amplifier: 0
+        duration-ticks: 100
+      resistance:
+        type: RESISTANCE
+        amplifier: 0
+        duration-ticks: 100
+      speed:
+        type: SPEED
+        amplifier: 1
+        duration-ticks: 100
+      night_vision:
+        type: NIGHT_VISION
+        amplifier: 0
+        duration-ticks: 160
+      strength:
+        type: STRENGTH
+        amplifier: 0
+        duration-ticks: 100
+    bonus-effects:
+      hero_resistance:
+        type: RESISTANCE
+        amplifier: 1
+        duration-ticks: 100
+      haste:
+        type: HASTE
+        amplifier: 1
+        duration-ticks: 100
+    rested-effects:
+      absorption:
+        type: ABSORPTION
+        amplifier: 1
+        duration-ticks: 2400
+      luck:
+        type: LUCK
+        amplifier: 0
+        duration-ticks: 2400
+      fire_resistance:
+        type: FIRE_RESISTANCE
+        amplifier: 0
+        duration-ticks: 2400
+    ward-effects:
+      weakness:
+        type: WEAKNESS
+        amplifier: 1
+        duration-ticks: 100
+      slowness:
+        type: SLOWNESS
+        amplifier: 1
+        duration-ticks: 100
