@@ -3,4 +3,20 @@ version: '$version'
 main: cg.headpop.campfireRPG.CampfireRPG
 api-version: '1.21.10'
 load: POSTWORLD
-description: Small RPG campfire aura plugin for Paper.
+description: Premium-grade scalable RPG campfire system for Paper servers.
+authors: [headpop]
+commands:
+  campfirerpg:
+    description: Main command for CampfireRPG
+    usage: /campfirerpg [status|reload]
+    permission: campfirerpg.use
+permissions:
+  campfirerpg.use:
+    description: Allows players to benefit from campfires and use basic command status.
+    default: true
+  campfirerpg.admin:
+    description: Allows reloading the plugin.
+    default: op
+  campfirerpg.bypass-night:
+    description: Reserved permission for future premium integrations.
+    default: op
