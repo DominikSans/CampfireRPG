@@ -113,14 +113,21 @@ class GuiConfigService(
     private fun parseSlots(section: ConfigurationSection): List<Int> {
         val rawEntries = mutableListOf<Any>()
         if (section.contains("slot")) {
-            rawEntries += section.get("slot")!!
+            section.get("slot")?.let(rawEntries::add)
         }
-        rawEntries += section.getList("slots").orEmpty()
+        if (section.contains("slots")) {
+            when (val slotsValue = section.get("slots")) {
+                is List<*> -> rawEntries.addAll(slotsValue.filterNotNull())
+                is Int -> rawEntries.add(slotsValue)
+                is String -> rawEntries.add(slotsValue)
+            }
+        }
 
         val parsed = linkedSetOf<Int>()
         rawEntries.forEach { entry ->
             when (entry) {
                 is Int -> parsed += entry
+                is Number -> parsed += entry.toInt()
                 is String -> parsed += expandSlotExpression(entry)
             }
         }

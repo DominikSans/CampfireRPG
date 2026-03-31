@@ -1,0 +1,112 @@
+CampfireRPG - Continuidad de trabajo
+Fecha base del ultimo estado: 2026-03-31
+
+1. Vision actual del plugin
+- El plugin sigue enfocado en campfires como sistema cooperativo de descanso, soporte y bonus por grupo.
+- Se mantuvo el soporte para clanes como feature extra opcional.
+- Si el servidor no tiene plugin de clanes, el plugin sigue funcionando normal.
+- Si el jugador no tiene clan, el plugin sigue funcionando normal.
+- UltimateClans y otros hooks siguen siendo un extra, no un requisito.
+
+2. Cambios importantes realizados
+- Se reorganizo config.yml para que sea mas entendible y con comentarios.
+- Se corrigio la creacion/copia de lang/es.yml y lang/en.yml al iniciar.
+- Se creo un sistema de runtime overrides para que la GUI no destruya comentarios ni el orden de config.yml.
+- El debug ahora persiste si se activa desde comando o desde GUI.
+- Se optimizo el registro de campfires para evitar reescaneos completos de chunks en eventos simples.
+- Se rehizo el sistema del menu admin para que sea editable desde gui.yml.
+- El nuevo gui.yml soporta:
+  - slot
+  - slots
+  - rangos como 10-14
+  - items-decorate
+  - item_model
+  - validacion de slots duplicados o fuera de rango
+- Se rediseño la GUI para parecerse mas a la imagen enviada:
+  - marco perimetral decorativo
+  - cabeza de piglin como informacion central
+  - opciones en el centro
+  - flechas abajo para navegar entre paginas
+  - boton de cerrar centrado abajo
+- Se hizo el editor de perfiles mas flexible:
+  - ya no depende solo de normal y soul
+  - ahora recorre perfiles disponibles
+- Se restauraron los defaults de clanes como feature extra opcional.
+
+3. Archivos clave tocados
+- gradle.properties
+- src/main/resources/config.yml
+- src/main/resources/gui.yml
+- src/main/resources/plugin.yml
+- src/main/resources/lang/en.yml
+- src/main/resources/lang/es.yml
+- src/main/kotlin/cg/headpop/campfireRPG/CampfireRPG.kt
+- src/main/kotlin/cg/headpop/campfireRPG/config/SettingsLoader.kt
+- src/main/kotlin/cg/headpop/campfireRPG/config/RuntimeConfigService.kt
+- src/main/kotlin/cg/headpop/campfireRPG/gui/GuiConfigService.kt
+- src/main/kotlin/cg/headpop/campfireRPG/gui/AdminMenuService.kt
+- src/main/kotlin/cg/headpop/campfireRPG/listener/AdminMenuListener.kt
+- src/main/kotlin/cg/headpop/campfireRPG/listener/CampfireBlockListener.kt
+- src/main/kotlin/cg/headpop/campfireRPG/service/CampfireRegistry.kt
+- src/main/kotlin/cg/headpop/campfireRPG/service/DiagnosticsService.kt
+
+4. Estado actual de version
+- Version actual: 4.4.0
+
+5. Commits recientes importantes
+- 6aa74f2 Rework admin GUI config and persist debug state
+- 81720a9 Refocus plugin defaults around core campfire gameplay
+- cf5adfb Redesign admin GUI layout and restore clan defaults
+
+6. Flujo que se sigue en cada respuesta cuando hay cambios
+- Primero reviso el codigo y la configuracion real antes de decidir cambios.
+- Si el cambio es grande, aplico cambios directamente y luego valido con build.
+- Cada vez que el cambio merece nueva version, aumento la version en gradle.properties segun criterio:
+  - patch: fixes pequenos
+  - minor: cambios funcionales visibles sin romper compatibilidad
+  - major: cambios que rompen compatibilidad o estructura base
+- Despues corro:
+  - ./gradlew.bat build
+- Si el build pasa, hago git:
+  - git add .
+  - git commit -m "mensaje"
+  - git push origin HEAD
+
+7. Regla acordada de versionado
+- Si hay un cambio pequeno: 4.4.0 -> 4.4.1
+- Si hay un cambio funcional visible: 4.4.0 -> 4.5.0
+- Si hay un cambio rompedor o reestructuracion fuerte: 4.4.0 -> 5.0.0
+
+8. Cosas que el usuario pidio especificamente y ya quedaron atendidas
+- El menu es editable desde gui.yml
+- Los decorativos tambien son editables desde gui.yml
+- La distribucion del inventario fue redisenada
+- El syntax del gui ahora es mas estilo DeluxeMenus/ZMenu
+- item_model fue agregado al parser del gui
+- debug persiste
+- se detectan problemas de slots del gui
+- es.yml se asegura al iniciar
+- clanes siguen como feature extra opcional
+- UltimateClans sigue soportado
+- cada ronda importante termina en build + commit + push
+
+9. Si se retoma el trabajo despues
+- Revisar primero git log y version actual.
+- Leer gui.yml y config.yml para no romper el layout nuevo ni los defaults.
+- Si la siguiente tarea toca GUI:
+  - revisar GuiConfigService.kt
+  - revisar AdminMenuService.kt
+  - revisar AdminMenuListener.kt
+- Si la siguiente tarea toca config o defaults:
+  - revisar SettingsLoader.kt
+  - revisar RuntimeConfigService.kt
+- Si la siguiente tarea toca rendimiento de campfires:
+  - revisar CampfireRegistry.kt
+  - revisar CampfireBlockListener.kt
+
+10. Posibles siguientes mejoras
+- Hacer una GUI basic y otra advanced
+- Separar placeholders avanzados del bloque base
+- Simplificar aun mas clases internas si no son feature principal
+- Mejorar visualmente la pagina de informacion
+- Agregar mas validaciones y mensajes de error claros para gui.yml
