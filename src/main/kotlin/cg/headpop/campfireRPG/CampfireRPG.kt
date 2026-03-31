@@ -4,6 +4,7 @@ import cg.headpop.campfireRPG.command.CampfireRpgCommand
 import cg.headpop.campfireRPG.config.SettingsLoader
 import cg.headpop.campfireRPG.gui.AdminMenuService
 import cg.headpop.campfireRPG.integration.IntegrationService
+import cg.headpop.campfireRPG.lang.LanguageService
 import cg.headpop.campfireRPG.listener.AdminMenuListener
 import cg.headpop.campfireRPG.placeholder.CampfirePlaceholderExpansion
 import cg.headpop.campfireRPG.listener.CampfireBlockListener
@@ -36,6 +37,9 @@ class CampfireRPG : JavaPlugin() {
     lateinit var playerClassService: PlayerClassService
         private set
 
+    lateinit var languageService: LanguageService
+        private set
+
     private var placeholderExpansion: CampfirePlaceholderExpansion? = null
 
     override fun onEnable() {
@@ -47,6 +51,7 @@ class CampfireRPG : JavaPlugin() {
         diagnosticsService = DiagnosticsService(this)
         adminMenuService = AdminMenuService(this)
         playerClassService = PlayerClassService(this)
+        languageService = LanguageService(this)
         auraService = CampfireAuraService(this, campfireRegistry)
 
         reloadPlugin()
@@ -68,12 +73,14 @@ class CampfireRPG : JavaPlugin() {
     fun reloadPlugin() {
         reloadConfig()
         settingsLoader.reload()
+        languageService.reload()
         integrationService.reload()
         diagnosticsService.reload()
         playerClassService.reload()
         campfireRegistry.reload()
         auraService.reload()
         registerPlaceholderExpansion()
+        printStartupBanner()
     }
 
     fun toggleConfigBoolean(path: String): Boolean {
@@ -113,5 +120,21 @@ class CampfireRPG : JavaPlugin() {
         }
 
         placeholderExpansion = CampfirePlaceholderExpansion(this).also { it.register() }
+    }
+
+    private fun printStartupBanner() {
+        val console = server.consoleSender
+        val version = pluginMeta.version
+        val author = pluginMeta.authors.joinToString(", ")
+        console.sendMessage("§6  _____                              __ _           ____  ____   ____ ")
+        console.sendMessage("§6 / ____|                            / _(_)         |  _ \\|  _ \\ / ____|")
+        console.sendMessage("§e| |     __ _ _ __ ___  _ __  _ __| |_ _ _ __ ___ | |_) | |_) | |  __ ")
+        console.sendMessage("§e| |    / _` | '_ ` _ \\| '_ \\| '__|  _| | '__/ _ \\|  _ <|  _ <| | |_ |")
+        console.sendMessage("§c| |___| (_| | | | | | | |_) | |  | | | | | |  __/| |_) | |_) | |__| |")
+        console.sendMessage("§c \\_____\\__,_|_| |_| |_| .__/|_|  |_| |_|_|  \\___||____/|____/ \\_____|")
+        console.sendMessage("§c                      | |                                               ")
+        console.sendMessage("§c                      |_|                                               ")
+        console.sendMessage("§7Version: §f$version")
+        console.sendMessage("§7Author(s): §f$author")
     }
 }

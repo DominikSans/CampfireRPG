@@ -57,6 +57,33 @@ class IntegrationService(
         return uClansHook.resolve(player) ?: clanHooks.firstNotNullOfOrNull { it.resolve(player) }
     }
 
+    fun getClanContext(player: Player): ClanContext? {
+        if (!plugin.settingsLoader.settings.integrations.enableClanHooks) {
+            return null
+        }
+        return uClansHook.getClanContext(player)
+    }
+
+    fun areSameClan(players: List<Player>): Boolean {
+        if (players.isEmpty()) {
+            return false
+        }
+        val first = resolveGroup(players.first()) ?: return false
+        return players.all { resolveGroup(it) == first }
+    }
+
+    fun isInOwnClanTerritory(player: Player, location: Location): Boolean {
+        return uClansHook.isInOwnTerritory(player, location)
+    }
+
+    fun getUltimateClanTag(player: Player): String = uClansHook.getClanTag(player)
+
+    fun getUltimateClanRole(player: Player): String = uClansHook.getClanRole(player)
+
+    fun getUltimateClanSize(player: Player): Int = uClansHook.getClanSize(player)
+
+    fun isUltimateClanLeader(player: Player): Boolean = uClansHook.isClanLeader(player)
+
     fun describeIntegrations(): List<String> {
         return listOf(
             "PlaceholderAPI: ${placeholderHook.isEnabled()}",

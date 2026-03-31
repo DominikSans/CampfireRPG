@@ -1,3 +1,5 @@
+language: EN
+
 scan:
   interval-ticks: 40
   registry-rescan-interval-ticks: 600
@@ -28,6 +30,7 @@ gameplay:
     cooldown-ticks: 120
 
 classes:
+  enabled: false
   default: adventurer
   types:
     adventurer:
@@ -102,6 +105,33 @@ classes:
           type: INVISIBILITY
           amplifier: 0
           duration-ticks: 60
+
+clan-features:
+  enabled: true
+  hero-bonus-require-same-clan: false
+  leader-bonus:
+    enabled: true
+    effects:
+      resistance:
+        type: RESISTANCE
+        amplifier: 0
+        duration-ticks: 100
+  size-bonus:
+    enabled: true
+    minimum-members: 4
+    effects:
+      haste:
+        type: HASTE
+        amplifier: 0
+        duration-ticks: 100
+  territory:
+    restrict-to-own-clan-territory: false
+    bonus-in-own-territory: true
+    effects:
+      luck:
+        type: LUCK
+        amplifier: 0
+        duration-ticks: 100
 
 restrictions:
   allowed-worlds: []

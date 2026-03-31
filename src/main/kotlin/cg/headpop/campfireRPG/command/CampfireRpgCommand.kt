@@ -34,7 +34,7 @@ class CampfireRpgCommand(
             }
 
             plugin.reloadPlugin()
-            sender.sendMessage("§aCampfireRPG recargado.")
+            sender.sendMessage(plugin.languageService.get("command.reload.done"))
             return true
         }
 
@@ -56,13 +56,13 @@ class CampfireRpgCommand(
             }
 
             plugin.campfireRegistry.fullRescanLoadedChunks()
-            sender.sendMessage("§aCampfires cargados reescaneados. Total actual: §f${plugin.campfireRegistry.size()}")
+            sender.sendMessage(plugin.languageService.get("command.scan.done", "count" to plugin.campfireRegistry.size().toString()))
             return true
         }
 
         if (args[0].equals("profiles", ignoreCase = true)) {
             val settings = plugin.settingsLoader.settings
-            sender.sendMessage("§6CampfireRPG Profiles")
+            sender.sendMessage(plugin.languageService.get("command.profiles.title"))
             settings.profiles.values.forEach { profile ->
                 sender.sendMessage(
                     "§7- §f${profile.id} §8| §7material: §f${profile.material} §8| §7radius: §f${profile.radius} §8| §7effects: §f${profile.effects.size}"
@@ -72,6 +72,10 @@ class CampfireRpgCommand(
         }
 
         if (args[0].equals("class", ignoreCase = true)) {
+            if (!plugin.settingsLoader.settings.classes.enabled) {
+                sender.sendMessage(plugin.languageService.get("command.class.disabled"))
+                return true
+            }
             val player = sender as? Player
             if (player == null) {
                 sender.sendMessage(plugin.settingsLoader.settings.messages.playerOnly)
@@ -79,7 +83,7 @@ class CampfireRpgCommand(
             }
 
             if (args.size == 1 || args[1].equals("list", ignoreCase = true)) {
-                sender.sendMessage("§6CampfireRPG Classes")
+                sender.sendMessage(plugin.languageService.get("command.class.title"))
                 plugin.settingsLoader.settings.classes.classes.values.forEach {
                     sender.sendMessage("§7- §f${it.id} §8| ${it.displayName} §8| §7perm: §f${it.permission}")
                 }
@@ -90,16 +94,16 @@ class CampfireRpgCommand(
 
             val classId = args[1].lowercase()
             if (!plugin.playerClassService.setSelectedClass(player, classId)) {
-                player.sendMessage("§cClase invalida. Usa /$label class list")
+                player.sendMessage(plugin.languageService.get("command.class.invalid", "label" to label))
                 return true
             }
 
-            player.sendMessage("§aClase seleccionada: §f$classId")
+            player.sendMessage(plugin.languageService.get("command.class.selected", "class" to classId))
             return true
         }
 
         if (args[0].equals("integrations", ignoreCase = true)) {
-            sender.sendMessage("§6CampfireRPG Integrations")
+            sender.sendMessage(plugin.languageService.get("command.integrations.title"))
             plugin.integrationService.describeIntegrations().forEach { sender.sendMessage("§7- §f$it") }
             return true
         }
@@ -117,7 +121,7 @@ class CampfireRpgCommand(
             }
 
             plugin.adminMenuService.open(player)
-            player.sendMessage(plugin.settingsLoader.settings.messages.guiOpened)
+            player.sendMessage(plugin.languageService.get("gui.opened"))
             return true
         }
 
@@ -131,14 +135,13 @@ class CampfireRpgCommand(
         alias: String,
         args: Array<out String>,
     ): MutableList<String> {
-        if (args.size != 1) {
-            return mutableListOf()
-        }
-
         val options = if (sender.hasPermission("campfirerpg.admin")) {
-            listOf("help", "status", "profiles", "integrations", "class", "reload", "debug", "scan", "gui")
+            mutableListOf("help", "status", "profiles", "integrations", "reload", "debug", "scan", "gui")
         } else {
-            listOf("help", "status", "profiles", "integrations", "class")
+            mutableListOf("help", "status", "profiles", "integrations")
+        }
+        if (plugin.settingsLoader.settings.classes.enabled) {
+            options += "class"
         }
 
         if (args.size == 1) {
@@ -165,16 +168,18 @@ class CampfireRpgCommand(
     }
 
     private fun sendHelp(sender: CommandSender, label: String) {
-        sender.sendMessage("§6CampfireRPG Commands")
-        sender.sendMessage("§7/$label status §8- §festado general del plugin")
-        sender.sendMessage("§7/$label profiles §8- §fperfiles de campfire activos")
-        sender.sendMessage("§7/$label integrations §8- §fintegraciones detectadas")
-        sender.sendMessage("§7/$label class [list|id] §8- §fselecciona tu clase de campfire")
+        sender.sendMessage(plugin.languageService.get("command.help.title"))
+        sender.sendMessage(plugin.languageService.get("command.help.status", "label" to label))
+        sender.sendMessage(plugin.languageService.get("command.help.profiles", "label" to label))
+        sender.sendMessage(plugin.languageService.get("command.help.integrations", "label" to label))
+        if (plugin.settingsLoader.settings.classes.enabled) {
+            sender.sendMessage("§7/$label class [list|id] §8- §fselect your campfire class")
+        }
         if (sender.hasPermission("campfirerpg.admin")) {
-            sender.sendMessage("§7/$label gui §8- §fpanel administrativo")
-            sender.sendMessage("§7/$label reload §8- §frecarga la configuracion")
-            sender.sendMessage("§7/$label debug §8- §factiva o desactiva debug")
-            sender.sendMessage("§7/$label scan §8- §freescanea campfires cargados")
+            sender.sendMessage(plugin.languageService.get("command.help.gui", "label" to label))
+            sender.sendMessage(plugin.languageService.get("command.help.reload", "label" to label))
+            sender.sendMessage(plugin.languageService.get("command.help.debug", "label" to label))
+            sender.sendMessage(plugin.languageService.get("command.help.scan", "label" to label))
         }
     }
 }

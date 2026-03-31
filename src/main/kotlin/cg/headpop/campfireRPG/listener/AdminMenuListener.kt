@@ -97,6 +97,9 @@ class AdminMenuListener(
     }
 
     private fun handleClassesPage(player: Player, slot: Int, holder: AdminMenuHolder) {
+        if (!plugin.settingsLoader.settings.classes.enabled) {
+            return
+        }
         val classes = plugin.settingsLoader.settings.classes.classes.keys.toList()
         if (slot in 10..14) {
             val index = slot - 10

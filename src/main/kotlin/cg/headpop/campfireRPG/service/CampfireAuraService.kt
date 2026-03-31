@@ -1,7 +1,6 @@
 package cg.headpop.campfireRPG.service
 
 import cg.headpop.campfireRPG.CampfireRPG
-import cg.headpop.campfireRPG.config.ClassPerk
 import cg.headpop.campfireRPG.config.CampfireProfile
 import cg.headpop.campfireRPG.config.EffectSpec
 import cg.headpop.campfireRPG.model.ActiveCampfire
@@ -32,6 +31,10 @@ class CampfireAuraService(
     private val currentCampfireTypeByPlayer = mutableMapOf<UUID, String>()
     private val heroBonusByPlayer = mutableMapOf<UUID, Boolean>()
     private val auraRemainingByPlayer = mutableMapOf<UUID, Int>()
+    private val clanTagByPlayer = mutableMapOf<UUID, String>()
+    private val clanRoleByPlayer = mutableMapOf<UUID, String>()
+    private val clanSizeByPlayer = mutableMapOf<UUID, Int>()
+    private val ownTerritoryByPlayer = mutableMapOf<UUID, Boolean>()
     private val restCampfireByPlayer = mutableMapOf<UUID, String>()
     private val lastRestRewardTick = mutableMapOf<UUID, Long>()
     private val lastExperiencePulseTick = mutableMapOf<UUID, Long>()
@@ -70,6 +73,10 @@ class CampfireAuraService(
         currentCampfireTypeByPlayer.clear()
         heroBonusByPlayer.clear()
         auraRemainingByPlayer.clear()
+        clanTagByPlayer.clear()
+        clanRoleByPlayer.clear()
+        clanSizeByPlayer.clear()
+        ownTerritoryByPlayer.clear()
         restCampfireByPlayer.clear()
         lastRestRewardTick.clear()
         lastExperiencePulseTick.clear()
@@ -107,22 +114,44 @@ class CampfireAuraService(
             }
 
             val heroCount = if (settings.integrations.useGroupSizeForHeroBonus) eligiblePlayers.size else nearbyPlayers.size
-            val heroBonus = heroCount >= settings.campfire.bonusThreshold
+            val sameClanForHero = !settings.clanFeatures.heroBonusRequireSameClan || plugin.integrationService.areSameClan(eligiblePlayers)
+            val heroBonus = heroCount >= settings.campfire.bonusThreshold && sameClanForHero
             val campfireKey = campfire.key()
             val soulCampfire = campfire.material == Material.SOUL_CAMPFIRE
 
             eligiblePlayers.forEach { player ->
+                if (settings.clanFeatures.enabled && settings.clanFeatures.territoryRestrictToOwnClan &&
+                    plugin.integrationService.detectedGroupPluginNames().isNotEmpty() &&
+                    !plugin.integrationService.isInOwnClanTerritory(player, location)
+                ) {
+                    return@forEach
+                }
                 applyProfile(player, profile, heroBonus)
-                val classPerk = resolveClassPerk(player)
-                applyClassPerks(player, classPerk, soulCampfire)
+                if (settings.classes.enabled) {
+                    val classPerk = resolveClassPerk(player)
+                    applyClassPerks(player, classPerk.globalEffects, if (soulCampfire) classPerk.soulEffects else classPerk.normalEffects)
+                    lastClassByPlayer[player.uniqueId] = classPerk.id
+                } else {
+                    lastClassByPlayer.remove(player.uniqueId)
+                }
+                applyClanFeatures(player, location)
                 applyGameplayFeatures(player)
                 energizedPlayers += player.uniqueId
                 lastProfileByPlayer[player.uniqueId] = profile.id
-                lastClassByPlayer[player.uniqueId] = classPerk.id
                 currentCampfireByPlayer[player.uniqueId] = campfireKey
                 currentCampfireTypeByPlayer[player.uniqueId] = if (soulCampfire) "soul" else "normal"
                 heroBonusByPlayer[player.uniqueId] = heroBonus
                 auraRemainingByPlayer[player.uniqueId] = settings.scan.intervalTicks.toInt() + 40
+                plugin.integrationService.getClanContext(player)?.let {
+                    clanTagByPlayer[player.uniqueId] = it.tag
+                    clanRoleByPlayer[player.uniqueId] = it.role ?: "none"
+                    clanSizeByPlayer[player.uniqueId] = it.size
+                } ?: run {
+                    clanTagByPlayer.remove(player.uniqueId)
+                    clanRoleByPlayer.remove(player.uniqueId)
+                    clanSizeByPlayer.remove(player.uniqueId)
+                }
+                ownTerritoryByPlayer[player.uniqueId] = plugin.integrationService.isInOwnClanTerritory(player, location)
                 buffedPlayers++
             }
 
@@ -163,6 +192,10 @@ class CampfireAuraService(
                 currentCampfireTypeByPlayer.remove(player.uniqueId)
                 heroBonusByPlayer.remove(player.uniqueId)
                 auraRemainingByPlayer.remove(player.uniqueId)
+                clanTagByPlayer.remove(player.uniqueId)
+                clanRoleByPlayer.remove(player.uniqueId)
+                clanSizeByPlayer.remove(player.uniqueId)
+                ownTerritoryByPlayer.remove(player.uniqueId)
                 restCampfireByPlayer.remove(player.uniqueId)
                 lastExperiencePulseTick.remove(player.uniqueId)
                 lastCleanseTick.remove(player.uniqueId)
@@ -199,9 +232,9 @@ class CampfireAuraService(
 
     fun getCurrentProfileId(player: Player): String = lastProfileByPlayer[player.uniqueId] ?: "none"
 
-    fun getCurrentClassId(player: Player): String = lastClassByPlayer[player.uniqueId] ?: resolveClassPerk(player).id
+    fun getCurrentClassId(player: Player): String = lastClassByPlayer[player.uniqueId] ?: "disabled"
 
-    fun getCurrentClassDisplayName(player: Player): String = resolveClassPerk(player).displayName
+    fun getCurrentClassDisplayName(player: Player): String = if (plugin.settingsLoader.settings.classes.enabled) getCurrentClassId(player) else "disabled"
 
     fun isPlayerInActiveCampfire(player: Player): Boolean = currentCampfireByPlayer.containsKey(player.uniqueId)
 
@@ -210,6 +243,14 @@ class CampfireAuraService(
     fun isHeroBonusActive(player: Player): Boolean = heroBonusByPlayer[player.uniqueId] == true
 
     fun getAuraRemaining(player: Player): Int = auraRemainingByPlayer[player.uniqueId] ?: 0
+
+    fun getClanTag(player: Player): String = clanTagByPlayer[player.uniqueId] ?: plugin.integrationService.getUltimateClanTag(player)
+
+    fun getClanRole(player: Player): String = clanRoleByPlayer[player.uniqueId] ?: plugin.integrationService.getUltimateClanRole(player)
+
+    fun getClanSize(player: Player): Int = clanSizeByPlayer[player.uniqueId] ?: plugin.integrationService.getUltimateClanSize(player)
+
+    fun isInOwnClanTerritory(player: Player): Boolean = ownTerritoryByPlayer[player.uniqueId] == true
 
     private fun applyGameplayFeatures(player: Player) {
         val gameplay = plugin.settingsLoader.settings.gameplay
@@ -243,17 +284,37 @@ class CampfireAuraService(
         }
     }
 
-    private fun applyClassPerks(player: Player, classPerk: ClassPerk, soulCampfire: Boolean) {
-        classPerk.globalEffects.forEach { applyEffect(player, it) }
-        val typeEffects = if (soulCampfire) classPerk.soulEffects else classPerk.normalEffects
+    private fun applyClassPerks(player: Player, globalEffects: List<EffectSpec>, typeEffects: List<EffectSpec>) {
+        globalEffects.forEach { applyEffect(player, it) }
         typeEffects.forEach { applyEffect(player, it) }
     }
 
-    private fun resolveClassPerk(player: Player): ClassPerk {
+    private fun resolveClassPerk(player: Player): cg.headpop.campfireRPG.config.ClassPerk {
         val classes = plugin.settingsLoader.settings.classes
+        if (!classes.enabled) {
+            return classes.classes[classes.defaultClassId] ?: classes.classes.values.first()
+        }
         return classes.classes.values.firstOrNull { player.hasPermission(it.permission) }
             ?: classes.classes[classes.defaultClassId]
             ?: classes.classes.values.first()
+    }
+
+    private fun applyClanFeatures(player: Player, location: org.bukkit.Location) {
+        val settings = plugin.settingsLoader.settings.clanFeatures
+        if (!settings.enabled) {
+            return
+        }
+
+        val context = plugin.integrationService.getClanContext(player) ?: return
+        if (settings.leaderBonusEnabled && context.leader) {
+            settings.leaderBonusEffects.forEach { applyEffect(player, it) }
+        }
+        if (settings.sizeBonusEnabled && context.size >= settings.sizeBonusMinimumMembers) {
+            settings.sizeBonusEffects.forEach { applyEffect(player, it) }
+        }
+        if (settings.territoryBonusEnabled && plugin.integrationService.isInOwnClanTerritory(player, location)) {
+            settings.territoryBonusEffects.forEach { applyEffect(player, it) }
+        }
     }
 
     private fun cleanseNegativeEffect(player: Player) {

@@ -1,11 +1,13 @@
 package cg.headpop.campfireRPG.config
 
 data class PluginSettings(
+    val language: LanguageSettings,
     val scan: ScanSettings,
     val night: NightSettings,
     val campfire: CampfireSettings,
     val gameplay: GameplaySettings,
     val classes: ClassSettings,
+    val clanFeatures: ClanFeatureSettings,
     val restrictions: RestrictionSettings,
     val integrations: IntegrationSettings,
     val gui: GuiSettings,
@@ -44,7 +46,12 @@ data class GameplaySettings(
     val sharedHealCooldownTicks: Long,
 )
 
+data class LanguageSettings(
+    val locale: String,
+)
+
 data class ClassSettings(
+    val enabled: Boolean,
     val defaultClassId: String,
     val classes: Map<String, ClassPerk>,
 )
@@ -57,6 +64,19 @@ data class ClassPerk(
     val globalEffects: List<EffectSpec>,
     val normalEffects: List<EffectSpec>,
     val soulEffects: List<EffectSpec>,
+)
+
+data class ClanFeatureSettings(
+    val enabled: Boolean,
+    val heroBonusRequireSameClan: Boolean,
+    val leaderBonusEnabled: Boolean,
+    val leaderBonusEffects: List<EffectSpec>,
+    val sizeBonusEnabled: Boolean,
+    val sizeBonusMinimumMembers: Int,
+    val sizeBonusEffects: List<EffectSpec>,
+    val territoryRestrictToOwnClan: Boolean,
+    val territoryBonusEnabled: Boolean,
+    val territoryBonusEffects: List<EffectSpec>,
 )
 
 data class RestrictionSettings(

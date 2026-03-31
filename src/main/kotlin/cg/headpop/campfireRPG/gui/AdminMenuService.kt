@@ -111,6 +111,26 @@ class AdminMenuService(
 
     private fun renderClassesPage(inventory: Inventory, player: Player) {
         val settings = plugin.settingsLoader.settings
+        if (!settings.classes.enabled) {
+            inventory.setItem(10, createItem(Material.BARRIER, "§cInternal Classes Disabled", listOf(
+                "§7This server relies on external class systems.",
+                "§7CampfireRPG class perks are disabled by default.",
+            )))
+            inventory.setItem(11, createItem(Material.NAME_TAG, "§bUltimateClans", listOf(
+                "§7Tag: §f${plugin.auraService.getClanTag(player)}",
+                "§7Role: §f${plugin.auraService.getClanRole(player)}",
+                "§7Size: §f${plugin.auraService.getClanSize(player)}",
+                "§7Own territory: §f${plugin.auraService.isInOwnClanTerritory(player)}",
+            )))
+            inventory.setItem(20, createItem(Material.PAPER, "§bPlaceholders", listOf(
+                "§7%campfirerpg_uclans_tag%",
+                "§7%campfirerpg_uclans_role%",
+                "§7%campfirerpg_uclans_size%",
+                "§7%campfirerpg_uclans_own_territory%",
+            )))
+            return
+        }
+
         val classes = settings.classes.classes.values.toList()
         val materials = listOf(Material.IRON_SWORD, Material.BLAZE_ROD, Material.BOW, Material.LEATHER_CHESTPLATE, Material.BOOK)
 
@@ -181,7 +201,7 @@ class AdminMenuService(
         inventory.setItem(2, createItem(Material.MAP, "§eOverview", listOf("§7Page 1")))
         inventory.setItem(3, createItem(Material.LEVER, "§eToggles", listOf("§7Page 2")))
         inventory.setItem(4, createItem(Material.REPEATER, "§eNumeric Tuning", listOf("§7Page 3")))
-        inventory.setItem(5, createItem(Material.ENCHANTED_BOOK, "§eClasses", listOf("§7Page 4")))
+        inventory.setItem(5, createItem(Material.ENCHANTED_BOOK, "§eClan & Placeholders", listOf("§7Page 4")))
         inventory.setItem(6, createItem(Material.BREWING_STAND, "§eProfile Editor", listOf("§7Page 5")))
 
         if (page > 0) {

@@ -21,12 +21,16 @@ class CampfirePlaceholderExpansion(
             "tracked_campfires" -> plugin.campfireRegistry.size().toString()
             "debug" -> plugin.diagnosticsService.isDebugEnabled().toString()
             "profile" -> player?.let(plugin.auraService::getCurrentProfileId) ?: "none"
-            "class" -> player?.let(plugin.auraService::getCurrentClassId) ?: plugin.settingsLoader.settings.classes.defaultClassId
-            "class_display" -> player?.let(plugin.auraService::getCurrentClassDisplayName) ?: "None"
+            "class" -> player?.let(plugin.auraService::getCurrentClassId) ?: "disabled"
+            "class_display" -> player?.let(plugin.auraService::getCurrentClassDisplayName) ?: "disabled"
             "active" -> player?.let { if (plugin.auraService.isPlayerInActiveCampfire(it)) "yes" else "no" } ?: "no"
             "aura_remaining" -> player?.let(plugin.auraService::getAuraRemaining)?.toString() ?: "0"
             "campfire_type" -> player?.let(plugin.auraService::getCurrentCampfireType) ?: "none"
             "hero_bonus" -> player?.let { if (plugin.auraService.isHeroBonusActive(it)) "yes" else "no" } ?: "no"
+            "uclans_tag" -> player?.let(plugin.auraService::getClanTag) ?: "none"
+            "uclans_role" -> player?.let(plugin.auraService::getClanRole) ?: "none"
+            "uclans_size" -> player?.let(plugin.auraService::getClanSize)?.toString() ?: "0"
+            "uclans_own_territory" -> player?.let { if (plugin.auraService.isInOwnClanTerritory(it)) "yes" else "no" } ?: "no"
             "integrations" -> plugin.integrationService.detectedGroupPluginNames().joinToString(",").ifBlank { "none" }
             else -> ""
         }

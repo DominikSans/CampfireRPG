@@ -27,6 +27,9 @@ class SettingsLoader(
         }
 
         settings = PluginSettings(
+            language = LanguageSettings(
+                locale = (config.getString("language", "EN") ?: "EN").uppercase(),
+            ),
             scan = ScanSettings(
                 intervalTicks = config.getLong("scan.interval-ticks", 40L).coerceAtLeast(20L),
                 rescanIntervalTicks = config.getLong("scan.registry-rescan-interval-ticks", 600L).coerceAtLeast(100L),
@@ -54,8 +57,21 @@ class SettingsLoader(
                 sharedHealCooldownTicks = config.getLong("gameplay.shared-heal.cooldown-ticks", 120L).coerceAtLeast(0L),
             ),
             classes = ClassSettings(
+                enabled = config.getBoolean("classes.enabled", false),
                 defaultClassId = config.getString("classes.default", "adventurer")!!.lowercase(),
                 classes = classPerks,
+            ),
+            clanFeatures = ClanFeatureSettings(
+                enabled = config.getBoolean("clan-features.enabled", true),
+                heroBonusRequireSameClan = config.getBoolean("clan-features.hero-bonus-require-same-clan", false),
+                leaderBonusEnabled = config.getBoolean("clan-features.leader-bonus.enabled", true),
+                leaderBonusEffects = loadEffects(config.getConfigurationSection("clan-features.leader-bonus.effects")),
+                sizeBonusEnabled = config.getBoolean("clan-features.size-bonus.enabled", true),
+                sizeBonusMinimumMembers = config.getInt("clan-features.size-bonus.minimum-members", 4).coerceAtLeast(2),
+                sizeBonusEffects = loadEffects(config.getConfigurationSection("clan-features.size-bonus.effects")),
+                territoryRestrictToOwnClan = config.getBoolean("clan-features.territory.restrict-to-own-clan-territory", false),
+                territoryBonusEnabled = config.getBoolean("clan-features.territory.bonus-in-own-territory", true),
+                territoryBonusEffects = loadEffects(config.getConfigurationSection("clan-features.territory.effects")),
             ),
             restrictions = RestrictionSettings(
                 allowedWorlds = config.getStringList("restrictions.allowed-worlds").map(String::lowercase).toSet(),
