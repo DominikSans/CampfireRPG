@@ -10,8 +10,8 @@ class IntegrationService(
 
     private val placeholderHook = PlaceholderHook(plugin)
     private val worldGuardHook = WorldGuardHook(plugin)
+    private val uClansHook = UClansGroupHook(plugin)
     private val clanHooks = listOf(
-        ReflectiveGroupHook(plugin, "UltimateClans", listOf("getClanManager", "getApi", "getUltimateClans"), listOf("getClanByPlayer", "getPlayerClan", "getClan", "getByPlayer"), listOf("getName", "getTag", "getId")),
         ReflectiveGroupHook(plugin, "SimpleClans", listOf("getClanManager", "getApi"), listOf("getClanByPlayerUniqueId", "getClanByPlayerName", "getClan"), listOf("getName", "getTagLabel", "getTag")),
         ReflectiveGroupHook(plugin, "Parties", listOf("getPartyManager", "getApi"), listOf("getParty", "getPartyByPlayer", "getPartyPlayer"), listOf("getName", "getId")),
         ReflectiveGroupHook(plugin, "Lands", listOf("getLandsIntegration", "getLandHandler", "getApi"), listOf("getLand", "getLandByPlayer", "getPlayerLand"), listOf("getName", "getId")),
@@ -23,6 +23,7 @@ class IntegrationService(
     fun reload() {
         placeholderHook.reload()
         worldGuardHook.reload()
+        uClansHook.reload()
         clanHooks.forEach(ReflectiveGroupHook::reload)
     }
 
@@ -53,7 +54,7 @@ class IntegrationService(
         if (!plugin.settingsLoader.settings.integrations.enableClanHooks) {
             return null
         }
-        return clanHooks.firstNotNullOfOrNull { it.resolve(player) }
+        return uClansHook.resolve(player) ?: clanHooks.firstNotNullOfOrNull { it.resolve(player) }
     }
 
     fun describeIntegrations(): List<String> {
@@ -64,7 +65,14 @@ class IntegrationService(
         )
     }
 
-    fun detectedGroupPluginNames(): List<String> = clanHooks.filter(ReflectiveGroupHook::isEnabled).map { it.pluginName }
+    fun detectedGroupPluginNames(): List<String> {
+        val names = mutableListOf<String>()
+        if (uClansHook.isEnabled()) {
+            names += "UltimateClans"
+        }
+        names += clanHooks.filter(ReflectiveGroupHook::isEnabled).map { it.pluginName }
+        return names
+    }
 
     fun isWorldGuardEnabled(): Boolean = worldGuardHook.isEnabled()
 }
