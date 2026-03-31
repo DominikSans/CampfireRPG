@@ -38,6 +38,20 @@ class GuiConfigService(
 
     fun title(): String = resolveText(config.getString("gui.title") ?: "CampfireRPG Control")
 
+    fun rows(): Int = config.getInt("gui.layout.rows", 5).coerceIn(1, 6)
+
+    fun slot(path: String, fallback: Int): Int {
+        return config.getInt("gui.layout.$path", fallback).coerceAtLeast(0)
+    }
+
+    fun slots(path: String, fallback: List<Int>): List<Int> {
+        val configured = config.getIntegerList("gui.layout.$path")
+        if (configured.isEmpty()) {
+            return fallback
+        }
+        return configured.filter { it >= 0 }
+    }
+
     fun item(key: String, fallbackMaterial: Material, fallbackName: String, fallbackLore: List<String>): GuiItemSpec {
         val section = config.getConfigurationSection("items.$key")
         val material = Material.matchMaterial(section?.getString("material") ?: fallbackMaterial.name) ?: fallbackMaterial

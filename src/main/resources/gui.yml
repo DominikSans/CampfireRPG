@@ -1,42 +1,121 @@
 gui:
   title: "lang:gui.title"
 
+  # Layout general del menu administrativo.
+  # rows acepta valores de 1 a 6.
+  layout:
+    rows: 5
+
+    # Slots decorativos. Aqui defines exactamente donde va el filler.
+    border-slots: [0, 1, 7, 8, 9, 17, 18, 26, 27, 35, 36, 37, 38, 39, 40, 42, 44]
+
+    # Navegacion principal entre paginas.
+    navigation:
+      overview: 2
+      toggles: 3
+      numeric: 4
+      clan: 5
+      profile: 6
+      previous: 41
+      next: 43
+
+    # Slots por pagina.
+    pages:
+      overview:
+        status: 10
+        performance: 11
+        integrations: 12
+        regions: 13
+        player-state: 14
+        placeholders: 15
+        debug: 20
+        reload: 21
+        rescan: 22
+        help: 23
+        close: 24
+
+      toggles:
+        night-only: 10
+        same-group: 11
+        worldguard: 12
+        clans: 13
+        placeholderapi: 14
+        hero-by-group: 15
+        xp-pulse: 16
+        cleanse: 19
+        shared-heal: 20
+
+      numeric:
+        xp-amount: 10
+        xp-cooldown: 11
+        cleanse-cooldown: 12
+        shared-heal: 13
+        heal-cooldown: 14
+        required-players: 15
+        bonus-threshold: 16
+        rest-cycles: 19
+        rest-cooldown: 20
+        ward-radius: 21
+        usage: 22
+
+      classes:
+        disabled: 10
+        clan-info: 11
+        class-slots: [10, 11, 12, 13, 14]
+        default-class: 19
+        placeholders: 20
+
+      profile:
+        selected-profile: 10
+        feed-players: 11
+        radius: 12
+        usage: 13
+        swap-profile: 14
+        effect-slots: [19, 20, 21, 22, 23]
+
 items:
   nav-overview:
     material: MAP
     name: "lang:gui.nav.overview.name"
     lore:
       - "lang:gui.nav.overview.lore"
+
   nav-toggles:
     material: LEVER
     name: "lang:gui.nav.toggles.name"
     lore:
       - "lang:gui.nav.toggles.lore"
+
   nav-numeric:
     material: REPEATER
     name: "lang:gui.nav.numeric.name"
     lore:
       - "lang:gui.nav.numeric.lore"
+
   nav-clan:
     material: ENCHANTED_BOOK
     name: "lang:gui.nav.clan.name"
     lore:
       - "lang:gui.nav.clan.lore"
+
   nav-profile:
     material: BREWING_STAND
     name: "lang:gui.nav.profile.name"
     lore:
       - "lang:gui.nav.profile.lore"
+
   previous:
     material: ARROW
     name: "lang:gui.nav.previous.name"
     lore:
       - "lang:gui.nav.previous.lore"
+
   next:
     material: ARROW
     name: "lang:gui.nav.next.name"
     lore:
       - "lang:gui.nav.next.lore"
+
   reload:
     material: EMERALD
     name: "lang:gui.reload.name"
@@ -45,22 +124,27 @@ items:
     glow: true
     item-flags:
       - HIDE_ENCHANTS
+
   rescan:
     material: SPYGLASS
     name: "lang:gui.rescan.name"
     lore:
       - "lang:gui.rescan.lore"
+
   help:
     material: BOOK
     name: "lang:gui.help.name"
     lore:
       - "lang:gui.help.lore1"
       - "lang:gui.help.lore2"
+
   close:
     material: BARRIER
     name: "lang:gui.close.name"
     lore:
       - "lang:gui.close.lore"
+
+  # Item decorativo usado en border-slots.
   border:
     material: GRAY_STAINED_GLASS_PANE
     name: "&8"

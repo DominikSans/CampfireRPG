@@ -28,33 +28,33 @@ class SettingsLoader(
 
         settings = PluginSettings(
             language = LanguageSettings(
-                locale = (config.getString("language", "EN") ?: "EN").uppercase(),
+                locale = string(config, "language.default", "language", "EN").uppercase(),
             ),
             scan = ScanSettings(
-                intervalTicks = config.getLong("scan.interval-ticks", 40L).coerceAtLeast(20L),
-                rescanIntervalTicks = config.getLong("scan.registry-rescan-interval-ticks", 600L).coerceAtLeast(100L),
+                intervalTicks = long(config, "timers.aura-interval-ticks", "scan.interval-ticks", 40L).coerceAtLeast(20L),
+                rescanIntervalTicks = long(config, "timers.registry-rescan-interval-ticks", "scan.registry-rescan-interval-ticks", 600L).coerceAtLeast(100L),
             ),
             night = NightSettings(
-                onlyAtNight = config.getBoolean("night.only-at-night", true),
-                startTick = config.getLong("night.start-tick", 13000L),
-                endTick = config.getLong("night.end-tick", 23000L),
+                onlyAtNight = bool(config, "activation.night.only-at-night", "night.only-at-night", true),
+                startTick = long(config, "activation.night.start-tick", "night.start-tick", 13000L),
+                endTick = long(config, "activation.night.end-tick", "night.end-tick", 23000L),
             ),
             campfire = CampfireSettings(
-                requiredPlayers = config.getInt("campfire.required-players", 2).coerceAtLeast(1),
-                restCyclesRequired = config.getInt("campfire.rest-cycles-required", 6).coerceAtLeast(1),
-                restRewardCooldownTicks = config.getLong("campfire.rest-reward-cooldown-ticks", 3600L).coerceAtLeast(0L),
-                monsterWardRadius = config.getDouble("campfire.monster-ward-radius", 8.0).coerceAtLeast(1.0),
-                bonusThreshold = config.getInt("campfire.bonus-threshold", 4).coerceAtLeast(2),
+                requiredPlayers = int(config, "activation.requirements.required-players", "campfire.required-players", 2).coerceAtLeast(1),
+                restCyclesRequired = int(config, "activation.rest.rest-cycles-required", "campfire.rest-cycles-required", 6).coerceAtLeast(1),
+                restRewardCooldownTicks = long(config, "activation.rest.rest-reward-cooldown-ticks", "campfire.rest-reward-cooldown-ticks", 3600L).coerceAtLeast(0L),
+                monsterWardRadius = double(config, "activation.requirements.monster-ward-radius", "campfire.monster-ward-radius", 8.0).coerceAtLeast(1.0),
+                bonusThreshold = int(config, "activation.requirements.bonus-threshold", "campfire.bonus-threshold", 4).coerceAtLeast(2),
             ),
             gameplay = GameplaySettings(
-                enableExperiencePulse = config.getBoolean("gameplay.experience-pulse.enabled", true),
-                experiencePulseAmount = config.getInt("gameplay.experience-pulse.amount", 3).coerceAtLeast(0),
-                experiencePulseCooldownTicks = config.getLong("gameplay.experience-pulse.cooldown-ticks", 200L).coerceAtLeast(0L),
-                enableCleanse = config.getBoolean("gameplay.cleanse.enabled", true),
-                cleanseCooldownTicks = config.getLong("gameplay.cleanse.cooldown-ticks", 200L).coerceAtLeast(0L),
-                enableSharedHeal = config.getBoolean("gameplay.shared-heal.enabled", true),
-                sharedHealAmount = config.getDouble("gameplay.shared-heal.amount", 1.0).coerceAtLeast(0.0),
-                sharedHealCooldownTicks = config.getLong("gameplay.shared-heal.cooldown-ticks", 120L).coerceAtLeast(0L),
+                enableExperiencePulse = bool(config, "gameplay.support.experience-pulse.enabled", "gameplay.experience-pulse.enabled", true),
+                experiencePulseAmount = int(config, "gameplay.support.experience-pulse.amount", "gameplay.experience-pulse.amount", 3).coerceAtLeast(0),
+                experiencePulseCooldownTicks = long(config, "gameplay.support.experience-pulse.cooldown-ticks", "gameplay.experience-pulse.cooldown-ticks", 200L).coerceAtLeast(0L),
+                enableCleanse = bool(config, "gameplay.support.cleanse.enabled", "gameplay.cleanse.enabled", true),
+                cleanseCooldownTicks = long(config, "gameplay.support.cleanse.cooldown-ticks", "gameplay.cleanse.cooldown-ticks", 200L).coerceAtLeast(0L),
+                enableSharedHeal = bool(config, "gameplay.support.shared-heal.enabled", "gameplay.shared-heal.enabled", true),
+                sharedHealAmount = double(config, "gameplay.support.shared-heal.amount", "gameplay.shared-heal.amount", 1.0).coerceAtLeast(0.0),
+                sharedHealCooldownTicks = long(config, "gameplay.support.shared-heal.cooldown-ticks", "gameplay.shared-heal.cooldown-ticks", 120L).coerceAtLeast(0L),
             ),
             classes = ClassSettings(
                 enabled = config.getBoolean("classes.enabled", false),
@@ -74,35 +74,35 @@ class SettingsLoader(
                 territoryBonusEffects = loadEffects(config.getConfigurationSection("clan-features.territory.effects")),
             ),
             restrictions = RestrictionSettings(
-                allowedWorlds = config.getStringList("restrictions.allowed-worlds").map(String::lowercase).toSet(),
-                blockedWorlds = config.getStringList("restrictions.blocked-worlds").map(String::lowercase).toSet(),
-                allowedRegions = config.getStringList("restrictions.allowed-regions").map(String::lowercase).toSet(),
-                blockedRegions = config.getStringList("restrictions.blocked-regions").map(String::lowercase).toSet(),
+                allowedWorlds = strings(config, "restrictions.worlds.allowed", "restrictions.allowed-worlds").map(String::lowercase).toSet(),
+                blockedWorlds = strings(config, "restrictions.worlds.blocked", "restrictions.blocked-worlds").map(String::lowercase).toSet(),
+                allowedRegions = strings(config, "restrictions.regions.allowed", "restrictions.allowed-regions").map(String::lowercase).toSet(),
+                blockedRegions = strings(config, "restrictions.regions.blocked", "restrictions.blocked-regions").map(String::lowercase).toSet(),
             ),
             integrations = IntegrationSettings(
-                enablePlaceholderApi = config.getBoolean("integrations.placeholderapi", true),
-                enableWorldGuard = config.getBoolean("integrations.worldguard", true),
-                enableClanHooks = config.getBoolean("integrations.clans", true),
-                requireSameGroupForActivation = config.getBoolean("integrations.require-same-group-for-activation", false),
-                useGroupSizeForHeroBonus = config.getBoolean("integrations.use-group-size-for-hero-bonus", true),
+                enablePlaceholderApi = bool(config, "integrations.hooks.placeholderapi", "integrations.placeholderapi", true),
+                enableWorldGuard = bool(config, "integrations.hooks.worldguard", "integrations.worldguard", true),
+                enableClanHooks = bool(config, "integrations.hooks.clans", "integrations.clans", true),
+                requireSameGroupForActivation = bool(config, "integrations.groups.require-same-group-for-activation", "integrations.require-same-group-for-activation", false),
+                useGroupSizeForHeroBonus = bool(config, "integrations.groups.use-group-size-for-hero-bonus", "integrations.use-group-size-for-hero-bonus", true),
             ),
             gui = GuiSettings(
                 title = colorize(config.getString("gui.title") ?: "&8CampfireRPG Control"),
             ),
             debug = DebugSettings(
-                enabledByDefault = config.getBoolean("debug.enabled-by-default", false),
-                logIntervalTicks = config.getLong("debug.log-interval-ticks", 1200L).coerceAtLeast(100L),
+                enabledByDefault = bool(config, "debug.enabled-by-default", default = false),
+                logIntervalTicks = long(config, "debug.log-interval-ticks", default = 1200L).coerceAtLeast(100L),
             ),
             messages = MessageSettings(
-                normalActionBar = colorize(config.getString("messages.normal-actionbar") ?: "&6Campfire Aura &7- descanso del aventurero"),
-                soulActionBar = colorize(config.getString("messages.soul-actionbar") ?: "&bSoul Campfire &7- poder ancestral"),
-                restedMessage = colorize(config.getString("messages.rested") ?: "&6El campfire te concede un descanso reparador."),
-                heroMessage = colorize(config.getString("messages.hero") ?: "&dLa fogata responde al grupo y despierta un bonus heroico."),
-                noPermission = colorize(config.getString("messages.no-permission") ?: "&cNo tienes permiso."),
-                playerOnly = colorize(config.getString("messages.player-only") ?: "&cSolo un jugador puede usar esta opcion."),
-                debugEnabled = colorize(config.getString("messages.debug-enabled") ?: "&aDebug activado."),
-                debugDisabled = colorize(config.getString("messages.debug-disabled") ?: "&cDebug desactivado."),
-                guiOpened = colorize(config.getString("messages.gui-opened") ?: "&aPanel de administracion abierto."),
+                normalActionBar = colorize(string(config, "messages.actionbar.normal", "messages.normal-actionbar", "&6Campfire Aura &7- descanso del aventurero")),
+                soulActionBar = colorize(string(config, "messages.actionbar.soul", "messages.soul-actionbar", "&bSoul Campfire &7- poder ancestral")),
+                restedMessage = colorize(string(config, "messages.chat.rested", "messages.rested", "&6El campfire te concede un descanso reparador.")),
+                heroMessage = colorize(string(config, "messages.chat.hero", "messages.hero", "&dLa fogata responde al grupo y despierta un bonus heroico.")),
+                noPermission = colorize(string(config, "messages.system.no-permission", "messages.no-permission", "&cNo tienes permiso.")),
+                playerOnly = colorize(string(config, "messages.system.player-only", "messages.player-only", "&cSolo un jugador puede usar esta opcion.")),
+                debugEnabled = colorize(string(config, "messages.system.debug-enabled", "messages.debug-enabled", "&aDebug activado.")),
+                debugDisabled = colorize(string(config, "messages.system.debug-disabled", "messages.debug-disabled", "&cDebug desactivado.")),
+                guiOpened = colorize(string(config, "messages.system.gui-opened", "messages.gui-opened", "&aPanel de administracion abierto.")),
             ),
             profiles = profiles,
         )
@@ -152,4 +152,52 @@ class SettingsLoader(
     }
 
     private fun colorize(text: String): String = text.replace('&', '§')
+
+    private fun string(config: org.bukkit.configuration.file.FileConfiguration, primaryPath: String, fallbackPath: String? = null, default: String): String {
+        return when {
+            config.contains(primaryPath) -> config.getString(primaryPath, default) ?: default
+            !fallbackPath.isNullOrBlank() && config.contains(fallbackPath) -> config.getString(fallbackPath, default) ?: default
+            else -> default
+        }
+    }
+
+    private fun bool(config: org.bukkit.configuration.file.FileConfiguration, primaryPath: String, fallbackPath: String? = null, default: Boolean): Boolean {
+        return when {
+            config.contains(primaryPath) -> config.getBoolean(primaryPath, default)
+            !fallbackPath.isNullOrBlank() && config.contains(fallbackPath) -> config.getBoolean(fallbackPath, default)
+            else -> default
+        }
+    }
+
+    private fun int(config: org.bukkit.configuration.file.FileConfiguration, primaryPath: String, fallbackPath: String? = null, default: Int): Int {
+        return when {
+            config.contains(primaryPath) -> config.getInt(primaryPath, default)
+            !fallbackPath.isNullOrBlank() && config.contains(fallbackPath) -> config.getInt(fallbackPath, default)
+            else -> default
+        }
+    }
+
+    private fun long(config: org.bukkit.configuration.file.FileConfiguration, primaryPath: String, fallbackPath: String? = null, default: Long): Long {
+        return when {
+            config.contains(primaryPath) -> config.getLong(primaryPath, default)
+            !fallbackPath.isNullOrBlank() && config.contains(fallbackPath) -> config.getLong(fallbackPath, default)
+            else -> default
+        }
+    }
+
+    private fun double(config: org.bukkit.configuration.file.FileConfiguration, primaryPath: String, fallbackPath: String? = null, default: Double): Double {
+        return when {
+            config.contains(primaryPath) -> config.getDouble(primaryPath, default)
+            !fallbackPath.isNullOrBlank() && config.contains(fallbackPath) -> config.getDouble(fallbackPath, default)
+            else -> default
+        }
+    }
+
+    private fun strings(config: org.bukkit.configuration.file.FileConfiguration, primaryPath: String, fallbackPath: String? = null): List<String> {
+        return when {
+            config.contains(primaryPath) -> config.getStringList(primaryPath)
+            !fallbackPath.isNullOrBlank() && config.contains(fallbackPath) -> config.getStringList(fallbackPath)
+            else -> emptyList()
+        }
+    }
 }

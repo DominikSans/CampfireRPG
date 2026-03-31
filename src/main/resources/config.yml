@@ -1,37 +1,91 @@
-language: EN
+# ============================================================
+# CampfireRPG - Main Configuration
+# ============================================================
+# Este archivo fue reorganizado para que sea mas facil de leer.
+# Las opciones viejas siguen siendo compatibles en el codigo,
+# pero desde ahora conviene editar esta nueva estructura.
 
-scan:
-  interval-ticks: 40
+language:
+  # Idiomas disponibles por defecto: EN, ES
+  default: EN
+
+timers:
+  # Cada cuantos ticks se actualizan las auras.
+  aura-interval-ticks: 40
+
+  # Cada cuantos ticks se reescanean los chunks cargados
+  # para encontrar campfires activos.
   registry-rescan-interval-ticks: 600
 
-night:
-  only-at-night: true
-  start-tick: 13000
-  end-tick: 23000
+activation:
+  night:
+    # Si es true, las fogatas solo funcionan de noche.
+    only-at-night: true
+    start-tick: 13000
+    end-tick: 23000
 
-campfire:
-  required-players: 2
-  rest-cycles-required: 6
-  rest-reward-cooldown-ticks: 3600
-  monster-ward-radius: 8.0
-  bonus-threshold: 4
+  requirements:
+    # Minimo de jugadores cerca para activar la fogata.
+    required-players: 2
+
+    # Jugadores necesarios para activar el bonus heroico.
+    bonus-threshold: 4
+
+    # Radio donde se debilitan monstruos cercanos.
+    monster-ward-radius: 8.0
+
+  rest:
+    # Cuantos ciclos deben pasar para entregar el bonus rested.
+    rest-cycles-required: 6
+
+    # Cooldown entre recompensas de rested.
+    rest-reward-cooldown-ticks: 3600
 
 gameplay:
-  experience-pulse:
-    enabled: true
-    amount: 3
-    cooldown-ticks: 200
-  cleanse:
-    enabled: true
-    cooldown-ticks: 200
-  shared-heal:
-    enabled: true
-    amount: 1.0
-    cooldown-ticks: 120
+  support:
+    experience-pulse:
+      enabled: true
+      amount: 3
+      cooldown-ticks: 200
+
+    cleanse:
+      enabled: true
+      cooldown-ticks: 200
+
+    shared-heal:
+      enabled: true
+      amount: 1.0
+      cooldown-ticks: 120
+
+integrations:
+  hooks:
+    placeholderapi: true
+    worldguard: true
+    clans: true
+
+  groups:
+    # Si es true, solo un mismo grupo/clan/party puede activar la fogata.
+    require-same-group-for-activation: false
+
+    # Si es true, el bonus heroico toma el tamano del grupo elegible.
+    use-group-size-for-hero-bonus: true
+
+restrictions:
+  worlds:
+    # Si allowed tiene mundos, solo funcionara en esos.
+    allowed: []
+    blocked: []
+
+  regions:
+    # Requiere WorldGuard para surtir efecto.
+    allowed: []
+    blocked: []
 
 classes:
+  # Sistema interno de clases del plugin.
   enabled: false
   default: adventurer
+
   types:
     adventurer:
       display-name: "&6Adventurer"
@@ -48,6 +102,7 @@ classes:
           type: LUCK
           amplifier: 0
           duration-ticks: 120
+
     warrior:
       display-name: "&cWarrior"
       permission: "campfirerpg.class.warrior"
@@ -67,6 +122,7 @@ classes:
           type: STRENGTH
           amplifier: 1
           duration-ticks: 100
+
     mage:
       display-name: "&bMage"
       permission: "campfirerpg.class.mage"
@@ -86,6 +142,7 @@ classes:
           type: FIRE_RESISTANCE
           amplifier: 0
           duration-ticks: 140
+
     ranger:
       display-name: "&aRanger"
       permission: "campfirerpg.class.ranger"
@@ -109,6 +166,7 @@ classes:
 clan-features:
   enabled: true
   hero-bonus-require-same-clan: false
+
   leader-bonus:
     enabled: true
     effects:
@@ -116,6 +174,7 @@ clan-features:
         type: RESISTANCE
         amplifier: 0
         duration-ticks: 100
+
   size-bonus:
     enabled: true
     minimum-members: 4
@@ -124,6 +183,7 @@ clan-features:
         type: HASTE
         amplifier: 0
         duration-ticks: 100
+
   territory:
     restrict-to-own-clan-territory: false
     bonus-in-own-territory: true
@@ -133,42 +193,34 @@ clan-features:
         amplifier: 0
         duration-ticks: 100
 
-restrictions:
-  allowed-worlds: []
-  blocked-worlds: []
-  allowed-regions: []
-  blocked-regions: []
-
-integrations:
-  placeholderapi: true
-  worldguard: true
-  clans: true
-  require-same-group-for-activation: false
-  use-group-size-for-hero-bonus: true
-
-gui:
-  title: "&8CampfireRPG Control"
-
 debug:
   enabled-by-default: false
   log-interval-ticks: 1200
 
 messages:
-  normal-actionbar: "&6Campfire Aura &7- descanso del aventurero"
-  soul-actionbar: "&bSoul Campfire &7- poder ancestral"
-  rested: "&6El campfire te concede un descanso reparador."
-  hero: "&dLa fogata responde al grupo y despierta un bonus heroico."
-  no-permission: "&cNo tienes permiso."
-  player-only: "&cSolo un jugador puede usar esta opcion."
-  debug-enabled: "&aDebug activado."
-  debug-disabled: "&cDebug desactivado."
-  gui-opened: "&aPanel de administracion abierto."
+  actionbar:
+    normal: "&6Campfire Aura &7- descanso del aventurero"
+    soul: "&bSoul Campfire &7- poder ancestral"
 
+  chat:
+    rested: "&6El campfire te concede un descanso reparador."
+    hero: "&dLa fogata responde al grupo y despierta un bonus heroico."
+
+  system:
+    no-permission: "&cNo tienes permiso."
+    player-only: "&cSolo un jugador puede usar esta opcion."
+    debug-enabled: "&aDebug activado."
+    debug-disabled: "&cDebug desactivado."
+    gui-opened: "&aPanel de administracion abierto."
+
+# Perfiles de campfire.
+# Puedes tener varios, pero por defecto el plugin usa normal y soul.
 profiles:
   normal:
     material: CAMPFIRE
     radius: 7.0
     feed-players: true
+
     effects:
       regeneration:
         type: REGENERATION
@@ -182,11 +234,13 @@ profiles:
         type: SPEED
         amplifier: 0
         duration-ticks: 100
+
     bonus-effects:
       haste:
         type: HASTE
         amplifier: 0
         duration-ticks: 100
+
     rested-effects:
       absorption:
         type: ABSORPTION
@@ -196,6 +250,7 @@ profiles:
         type: LUCK
         amplifier: 0
         duration-ticks: 1800
+
     ward-effects:
       weakness:
         type: WEAKNESS
@@ -210,6 +265,7 @@ profiles:
     material: SOUL_CAMPFIRE
     radius: 8.5
     feed-players: true
+
     effects:
       regeneration:
         type: REGENERATION
@@ -231,6 +287,7 @@ profiles:
         type: STRENGTH
         amplifier: 0
         duration-ticks: 100
+
     bonus-effects:
       hero_resistance:
         type: RESISTANCE
@@ -240,6 +297,7 @@ profiles:
         type: HASTE
         amplifier: 1
         duration-ticks: 100
+
     rested-effects:
       absorption:
         type: ABSORPTION
@@ -253,6 +311,7 @@ profiles:
         type: FIRE_RESISTANCE
         amplifier: 0
         duration-ticks: 2400
+
     ward-effects:
       weakness:
         type: WEAKNESS

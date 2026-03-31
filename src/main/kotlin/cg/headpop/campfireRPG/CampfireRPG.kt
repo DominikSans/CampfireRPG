@@ -57,6 +57,7 @@ class CampfireRPG : JavaPlugin() {
         adminMenuService = AdminMenuService(this)
         playerClassService = PlayerClassService(this)
         languageService = LanguageService(this)
+        languageService.ensureLanguageFiles()
         auraService = CampfireAuraService(this, campfireRegistry)
 
         reloadPlugin(fullRescan = true, showBanner = true)
@@ -92,32 +93,49 @@ class CampfireRPG : JavaPlugin() {
         }
     }
 
-    fun toggleConfigBoolean(path: String): Boolean {
-        val nextValue = !config.getBoolean(path, false)
-        config.set(path, nextValue)
+    fun toggleConfigBoolean(path: String, fallbackPath: String? = null): Boolean {
+        val actualPath = resolveConfigPath(path, fallbackPath)
+        val nextValue = !config.getBoolean(actualPath, false)
+        writeConfigValue(path, fallbackPath, nextValue)
         saveConfig()
         reloadPlugin()
         return nextValue
     }
 
-    fun updateConfigNumber(path: String, delta: Number): Number {
-        val current = config.get(path)
+    fun updateConfigNumber(path: String, delta: Number, fallbackPath: String? = null): Number {
+        val actualPath = resolveConfigPath(path, fallbackPath)
+        val current = config.get(actualPath)
         val next = when (current) {
             is Int -> (current + delta.toInt()).coerceAtLeast(0)
             is Long -> (current + delta.toLong()).coerceAtLeast(0L)
             is Double -> (current + delta.toDouble()).coerceAtLeast(0.0)
             else -> delta
         }
-        config.set(path, next)
+        writeConfigValue(path, fallbackPath, next)
         saveConfig()
         reloadPlugin()
         return next
     }
 
-    fun setConfigValue(path: String, value: Any) {
-        config.set(path, value)
+    fun setConfigValue(path: String, value: Any, fallbackPath: String? = null) {
+        writeConfigValue(path, fallbackPath, value)
         saveConfig()
         reloadPlugin()
+    }
+
+    private fun writeConfigValue(path: String, fallbackPath: String?, value: Any) {
+        config.set(path, value)
+        if (!fallbackPath.isNullOrBlank() && fallbackPath != path) {
+            config.set(fallbackPath, value)
+        }
+    }
+
+    private fun resolveConfigPath(path: String, fallbackPath: String?): String {
+        return when {
+            config.contains(path) -> path
+            !fallbackPath.isNullOrBlank() && config.contains(fallbackPath) -> fallbackPath
+            else -> path
+        }
     }
 
     private fun registerPlaceholderExpansion() {
